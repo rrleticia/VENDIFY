@@ -50,46 +50,8 @@ const commonOptions: ThemeOptions = {
       "Segoe UI",
       "Arial",
     ].join(","),
-    h1: {
-      fontWeight: 700,
-      letterSpacing: -0.5,
-      fontSize: "2.4rem",
-    },
-    h2: {
-      fontWeight: 700,
-      letterSpacing: -0.2,
-      fontSize: "2rem",
-    },
-    h3: {
-      fontWeight: 700,
-      letterSpacing: -0.2,
-      fontSize: "1.6rem",
-    },
-    h4: {
-      fontWeight: 700,
-      fontSize: "1.35rem",
-    },
-    h5: {
-      fontWeight: 600,
-      fontSize: "1.15rem",
-    },
-    h6: {
-      fontWeight: 600,
-      fontSize: "1.05rem",
-    },
-    subtitle1: { fontWeight: 600 },
-    subtitle2: {
-      fontWeight: 600,
-      opacity: 0.9,
-    },
     button: {
       textTransform: "none",
-      fontWeight: 700,
-      letterSpacing: 0.2,
-    },
-    overline: {
-      fontWeight: 700,
-      letterSpacing: 1,
     },
   },
   breakpoints: {
@@ -114,21 +76,6 @@ const commonOptions: ThemeOptions = {
     tooltip: 1600,
   },
 };
-
-// Shadows tuned for dark mode (less contrast)
-const darkShadows: ThemeOptions["shadows"] = [
-  "none",
-  "0 1px 1px rgba(0,0,0,.35)",
-  "0 1px 2px rgba(0,0,0,.38)",
-  "0 2px 4px rgba(0,0,0,.42)",
-  "0 3px 6px rgba(0,0,0,.44)",
-  "0 4px 8px rgba(0,0,0,.46)",
-  "0 6px 10px rgba(0,0,0,.48)",
-  "0 8px 12px rgba(0,0,0,.5)",
-  "0 10px 14px rgba(0,0,0,.52)",
-  "0 12px 16px rgba(0,0,0,.54)",
-  ...Array(15).fill("0 14px 18px rgba(0,0,0,.56)"),
-] as any;
 
 // ---------- Tokens per mode ----------
 function getDesignTokens(mode: "light" | "dark"): ThemeOptions {
@@ -183,7 +130,6 @@ function getDesignTokens(mode: "light" | "dark"): ThemeOptions {
         focusOpacity: 0.15,
       },
     },
-    shadows: isLight ? undefined : (darkShadows as any),
   };
 }
 
@@ -246,7 +192,6 @@ function getThemedComponents(mode: "light" | "dark"): ThemeOptions {
         styleOverrides: {
           root: {
             borderRadius: 12,
-            fontWeight: 700,
             paddingInline: 16,
           },
           contained: {
@@ -385,5 +330,6 @@ export function createAppTheme(mode: "light" | "dark" = "light"): Theme {
   const withComponents = createTheme(
     deepmerge(base, getThemedComponents(mode))
   );
+
   return responsiveFontSizes(withComponents);
 }

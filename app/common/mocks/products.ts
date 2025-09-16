@@ -1,0 +1,8 @@
+import type { Product } from "../types/product";
+
+export const products: Product[] = [
+  { id: 1, name: "Camiseta Básica", price: 59.9, category: "Vestuário", image: "https://picsum.photos/seed/p1/800/600", description: "Camiseta 100% algodão, confortável e versátil.", stock: 22 },
+  { id: 2, name: "Tênis Casual", price: 199.9, category: "Calçados", image: "https://picsum.photos/seed/p2/800/600", description: "Tênis leve para o dia a dia.", stock: 10 },
+  { id: 3, name: "Fone Bluetooth", price: 149.9, category: "Eletrônicos", image: "https://picsum.photos/seed/p3/800/600", description: "Som equilibrado e bateria de longa duração.", stock: 15 },
+  { id: 4, name: "Relógio Digital", price: 129.9, category: "Acessórios", image: "https://picsum.photos/seed/p4/800/600", description: "Resistente à água e com cronômetro.", stock: 7 }
+];

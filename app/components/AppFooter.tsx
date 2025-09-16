@@ -1,6 +1,7 @@
 import { useAppThemeContext } from "@common/contexts";
-import { Box, IconButton, Tooltip, Typography, useTheme } from "@mui/material";
-import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import Brightness4 from "@mui/icons-material/Brightness4";
+import Brightness7 from "@mui/icons-material/Brightness7";
 
 function ThemeToggle() {
   const { mode, toggleColorMode } = useAppThemeContext();
@@ -19,9 +20,9 @@ function ThemeToggle() {
         }}
       >
         {mode === "dark" ? (
-          <Brightness7 sx={{ fontSize: 18 }} />
+          <Brightness7 sx={{ fontSize: 20 }} />
         ) : (
-          <Brightness4 sx={{ fontSize: 18 }} />
+          <Brightness4 sx={{ fontSize: 20 }} />
         )}
       </IconButton>
     </Tooltip>
@@ -39,6 +40,7 @@ export default function AppFooter() {
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
         <Typography variant="body2" color="text.secondary">

@@ -13,14 +13,14 @@ export { ThemeProvider, CssBaseline };
 // ---------- Color Mode Context + Provider ----------
 type ColorMode = "light" | "dark";
 
-interface IAppThemeContext {
+interface IAppThemeContextProps {
   mode: ColorMode;
   toggleColorMode: () => void;
   setMode: (mode: ColorMode) => void;
 }
 
-const AppThemeContext = createContext<IAppThemeContext | undefined>(
-  {} as IAppThemeContext
+const AppThemeContext = createContext<IAppThemeContextProps | undefined>(
+  {} as IAppThemeContextProps
 );
 
 interface IColorModeProviderProps {
