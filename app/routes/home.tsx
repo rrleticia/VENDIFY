@@ -1,5 +1,6 @@
+import AppFooter from "@components/AppFooter";
+import AppHeader from "@components/AppHeader";
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +10,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Welcome />;
+  return (
+    <>
+      <AppHeader />
+
+      <AppFooter />
+    </>
+  );
 }
