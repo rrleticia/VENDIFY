@@ -2,7 +2,6 @@ import {
   AppBar,
   Toolbar,
   Button,
-  Box,
   IconButton,
   Badge,
   Typography,
@@ -18,6 +17,28 @@ interface IAppSearchProps {
   onSearch: SubmitFunction; // useSubmit() da página
 }
 
+function UserButton() {
+  const logged = false;
+  if (logged) {
+    return (
+      <Button component={NavLink} to="/profile" color="inherit">
+        Perfil
+      </Button>
+    );
+  } else {
+    return (
+      <>
+        <Button component={NavLink} to="/register" color="inherit">
+          Cadastrar
+        </Button>
+        <Button component={NavLink} to="/login" color="inherit">
+          Entrar
+        </Button>
+      </>
+    );
+  }
+}
+
 export default function AppHeader({ search, onSearch }: IAppSearchProps) {
   return (
     <AppBar
@@ -25,8 +46,10 @@ export default function AppHeader({ search, onSearch }: IAppSearchProps) {
       color="inherit"
       elevation={0}
       sx={{
+        height: 76,
         borderBottom: 1,
         borderColor: "divider",
+        justifyContent: "center",
       }}
     >
       <Toolbar sx={{ gap: 2 }}>
@@ -48,14 +71,14 @@ export default function AppHeader({ search, onSearch }: IAppSearchProps) {
           <Button component={NavLink} to="/orders" color="inherit">
             Pedidos
           </Button>
-          <Button component={NavLink} to="/profile" color="inherit">
-            Perfil
-          </Button>
+
+          <UserButton></UserButton>
+
           <IconButton component={Link} to="/cart" aria-label="Carrinho">
             <Badge badgeContent={1} color="primary">
               <ShoppingCartIcon />
             </Badge>
-          </IconButton>{" "}
+          </IconButton>
         </Stack>
       </Toolbar>
     </AppBar>

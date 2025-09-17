@@ -22,6 +22,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <body>
         <AppThemeProvider>
           <CssBaseline />
+
           {children}
         </AppThemeProvider>
 

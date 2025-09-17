@@ -1,7 +1,7 @@
 import type { ProductType } from "@common/types/ProductType";
 import AppFooter from "@components/AppFooter";
 import AppHeader from "@components/AppHeader";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { useSubmit } from "react-router";
 import {
   Outlet,
@@ -34,9 +34,9 @@ export default function HomeLayout() {
     <>
       <AppHeader search={name} onSearch={submit} />
 
-      <Container sx={{ py: 4, flex: 1 }}>
+      <Box sx={{ paddingY: 4, flex: 1, marginX: 9 }}>
         <Outlet />
-      </Container>
+      </Box>
 
       <AppFooter />
     </>
