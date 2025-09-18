@@ -1,4 +1,11 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import {
   Box,
   Container,
@@ -34,6 +41,11 @@ import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import { Link as RouterLink } from "react-router";
+import { useProfileContext } from "@common/contexts";
+import ProfileSection from "@components/Pages/ProfileSection";
+import { useProfileForm } from "@common/hooks/models/ProfileForm";
+import type { AddressType } from "@common/types/UserType";
+import { useAddressForm } from "@common/hooks/models/AddressForm";
 
 // ---------------- Mock & Utils ----------------
 type Address = {
@@ -132,36 +144,6 @@ function maskCard(c: Card) {
 
 // ---------------- Page ----------------
 export default function ProfilePage() {
-  // user
-  const [user, setUser] = useState<User>(MOCK_USER);
-  const [savingUser, setSavingUser] = useState(false);
-
-  // avatar
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
-    user.avatar
-  );
-
-  // addresses
-  const [addresses, setAddresses] = useState<Address[]>(MOCK_ADDRESSES);
-  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-
-  // cards
-  const [cards, setCards] = useState<Card[]>(MOCK_CARDS);
-  const [cardDialogOpen, setCardDialogOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<Card | null>(null);
-
-  // password & privacy
-  const [oldPass, setOldPass] = useState("");
-  const [newPass, setNewPass] = useState("");
-  const [confirmPass, setConfirmPass] = useState("");
-
-  // notifications
-  const ordersCount = 12; // mock
-  const points = 380; // mock de pontos/fidelidade
-  const coupons = 2; // mock
-
   // feedback
   const [snack, setSnack] = useState<{
     open: boolean;
@@ -173,298 +155,17 @@ export default function ProfilePage() {
     severity: "success",
   });
 
-  // derived
-  const defaultAddressId = useMemo(
-    () => addresses.find((a) => a.isDefault)?.id,
-    [addresses]
-  );
-  const defaultCardId = useMemo(
-    () => cards.find((c) => c.isDefault)?.id,
-    [cards]
-  );
-
-  // handlers - user
-  const onSaveUser = () => {
-    setSavingUser(true);
-    setTimeout(() => {
-      setSavingUser(false);
-      setSnack({
-        open: true,
-        msg: "Perfil atualizado com sucesso.",
-        severity: "success",
-      });
-    }, 500);
-  };
-
-  const onAvatarClick = () => fileRef.current?.click();
-  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAvatarPreview(String(reader.result));
-      setUser((u) => ({ ...u, avatar: String(reader.result) }));
-      setSnack({
-        open: true,
-        msg: "Foto atualizada (mock).",
-        severity: "info",
-      });
-    };
-    reader.readAsDataURL(f);
-  };
-
-  // handlers - address
-  const openNewAddress = () => {
-    setEditingAddress({
-      id: `addr-${Date.now()}`,
-      label: "Novo",
-      line1: "",
-      city: "",
-      state: "PB",
-      zip: "",
-    });
-    setAddressDialogOpen(true);
-  };
-
-  const openEditAddress = (a: Address) => {
-    setEditingAddress({ ...a });
-    setAddressDialogOpen(true);
-  };
-
-  const saveAddress = () => {
-    if (!editingAddress) return;
-    setAddresses((prev) => {
-      const exists = prev.some((a) => a.id === editingAddress.id);
-      const next = exists
-        ? prev.map((a) => (a.id === editingAddress.id ? editingAddress : a))
-        : [...prev, editingAddress];
-      // se marcou como padrão, desmarca os outros
-      if (editingAddress.isDefault) {
-        next.forEach((a) => (a.isDefault = a.id === editingAddress.id));
-      }
-      return next;
-    });
-    setAddressDialogOpen(false);
-    setSnack({ open: true, msg: "Endereço salvo.", severity: "success" });
-  };
-
-  const removeAddress = (id: string) => {
-    setAddresses((prev) => prev.filter((a) => a.id !== id));
-    setSnack({ open: true, msg: "Endereço removido.", severity: "warning" });
-  };
-
-  // handlers - cards
-  const openNewCard = () => {
-    setEditingCard({
-      id: `card-${Date.now()}`,
-      brand: "Visa",
-      last4: "",
-      holder: user.name.toUpperCase(),
-      expMonth: 1,
-      expYear: new Date().getFullYear() + 3,
-    });
-    setCardDialogOpen(true);
-  };
-
-  const openEditCard = (c: Card) => {
-    setEditingCard({ ...c });
-    setCardDialogOpen(true);
-  };
-
-  const saveCard = () => {
-    if (!editingCard || editingCard.last4.length < 3) {
-      setSnack({
-        open: true,
-        msg: "Informe os dados do cartão.",
-        severity: "error",
-      });
-      return;
-    }
-    setCards((prev) => {
-      const exists = prev.some((c) => c.id === editingCard.id);
-      const next = exists
-        ? prev.map((c) => (c.id === editingCard.id ? editingCard : c))
-        : [...prev, editingCard];
-      if (editingCard.isDefault) {
-        next.forEach((c) => (c.isDefault = c.id === editingCard.id));
-      }
-      return next;
-    });
-    setCardDialogOpen(false);
-    setSnack({ open: true, msg: "Cartão salvo.", severity: "success" });
-  };
-
-  const removeCard = (id: string) => {
-    setCards((prev) => prev.filter((c) => c.id !== id));
-    setSnack({ open: true, msg: "Cartão removido.", severity: "warning" });
-  };
-
-  // handlers - password
-  const changePassword = () => {
-    if (!oldPass || newPass.length < 6 || newPass !== confirmPass) {
-      setSnack({
-        open: true,
-        msg: "Verifique a senha (mín. 6 caracteres e confirmação igual).",
-        severity: "error",
-      });
-      return;
-    }
-    setOldPass("");
-    setNewPass("");
-    setConfirmPass("");
-    setSnack({
-      open: true,
-      msg: "Senha alterada (mock).",
-      severity: "success",
-    });
-  };
-
-  // handlers - danger zone
-  const deleteAccount = () => {
-    // mock
-    setSnack({
-      open: true,
-      msg: "Conta excluída (mock).",
-      severity: "warning",
-    });
-  };
-
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
+      <ProfileInfo></ProfileInfo>
       <Grid spacing={2} sx={{ width: 1 }}>
         {/* Coluna esquerda: Perfil, Endereços, Cartões */}
         <Grid sx={{ xs: 12, md: 6 }}>
           {/* Dados Pessoais */}
-          <Section title="Dados pessoais" icon={<EditRoundedIcon />}>
-            <Grid container spacing={2}>
-              <Grid sx={{ xs: 12, md: 6 }}>
-                <TextField
-                  label="Nome completo"
-                  fullWidth
-                  value={user.name}
-                  onChange={(e) =>
-                    setUser((u) => ({ ...u, name: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid sx={{ xs: 12, md: 6 }}>
-                <TextField
-                  label="E-mail"
-                  fullWidth
-                  value={user.email}
-                  disabled
-                />
-              </Grid>
-              <Grid sx={{ xs: 12, md: 6 }}>
-                <TextField
-                  label="Telefone"
-                  fullWidth
-                  value={user.phone ?? ""}
-                  onChange={(e) =>
-                    setUser((u) => ({ ...u, phone: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid sx={{ xs: 12, md: 3 }}>
-                <TextField
-                  label="CPF"
-                  fullWidth
-                  value={user.cpf ?? ""}
-                  onChange={(e) =>
-                    setUser((u) => ({ ...u, cpf: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid sx={{ xs: 12, md: 3 }}>
-                <TextField
-                  type="date"
-                  label="Nascimento"
-                  InputLabelProps={{ shrink: true }}
-                  fullWidth
-                  value={user.birth ?? ""}
-                  onChange={(e) =>
-                    setUser((u) => ({ ...u, birth: e.target.value }))
-                  }
-                />
-              </Grid>
-            </Grid>
-            <Stack direction="row" gap={1} sx={{ mt: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<SaveRoundedIcon />}
-                onClick={onSaveUser}
-                disabled={savingUser}
-              >
-                Salvar
-              </Button>
-              <Button onClick={() => setUser(MOCK_USER)}>Desfazer</Button>
-            </Stack>
-          </Section>
+          <PersonalInfo></PersonalInfo>
 
           {/* Endereços */}
-          <Section title="Endereços" icon={<LocationOnRoundedIcon />}>
-            <Stack gap={1.5} sx={{ width: 1 }}>
-              {addresses.map((a) => (
-                <Paper
-                  key={a.id}
-                  variant="outlined"
-                  sx={{ p: 1.5, borderRadius: 2, width: 1 }}
-                >
-                  <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    alignItems={{ xs: "start", sm: "center" }}
-                    justifyContent="space-between"
-                    gap={1}
-                  >
-                    <Stack gap={0.5}>
-                      <Typography fontWeight={700}>
-                        {a.label} {a.isDefault ? "• padrão" : ""}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {a.line1}
-                        {a.line2 ? `, ${a.line2}` : ""} — {a.city}/{a.state} •{" "}
-                        {a.zip}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" gap={1} flexWrap="wrap">
-                      {!a.isDefault && (
-                        <Button
-                          size="small"
-                          onClick={() =>
-                            setAddresses((prev) =>
-                              prev.map((x) => ({
-                                ...x,
-                                isDefault: x.id === a.id,
-                              }))
-                            )
-                          }
-                        >
-                          Definir como padrão
-                        </Button>
-                      )}
-                      <Button size="small" onClick={() => openEditAddress(a)}>
-                        Editar
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() => removeAddress(a.id)}
-                      >
-                        Remover
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </Paper>
-              ))}
-              <Button
-                startIcon={<AddRoundedIcon />}
-                onClick={openNewAddress}
-                variant="outlined"
-              >
-                Adicionar endereço
-              </Button>
-            </Stack>
-          </Section>
+          <AddressInfo setSnack={setSnack}></AddressInfo>
 
           {/* Pagamentos */}
           <Section title="Pagamentos" icon={<CreditCardRoundedIcon />}>
@@ -647,117 +348,7 @@ export default function ProfilePage() {
         </Grid>
       </Grid>
       <ProfileInfo></ProfileInfo>
-      {/* Dialogs: Endereço */}
-      <Dialog
-        open={addressDialogOpen}
-        onClose={() => setAddressDialogOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          {editingAddress &&
-          MOCK_ADDRESSES.some((a) => a.id === editingAddress.id)
-            ? "Editar endereço"
-            : "Novo endereço"}
-        </DialogTitle>
-        <DialogContent dividers>
-          {editingAddress && (
-            <Stack gap={1.5} sx={{ mt: 0.5 }}>
-              <TextField
-                label="Rótulo"
-                value={editingAddress.label}
-                onChange={(e) =>
-                  setEditingAddress({
-                    ...editingAddress,
-                    label: e.target.value,
-                  })
-                }
-                fullWidth
-              />
-              <TextField
-                label="Linha 1"
-                value={editingAddress.line1}
-                onChange={(e) =>
-                  setEditingAddress({
-                    ...editingAddress,
-                    line1: e.target.value,
-                  })
-                }
-                fullWidth
-              />
-              <TextField
-                label="Linha 2"
-                value={editingAddress.line2 ?? ""}
-                onChange={(e) =>
-                  setEditingAddress({
-                    ...editingAddress,
-                    line2: e.target.value,
-                  })
-                }
-                fullWidth
-              />
-              <Grid container spacing={2}>
-                <Grid sx={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label="Cidade"
-                    fullWidth
-                    value={editingAddress.city}
-                    onChange={(e) =>
-                      setEditingAddress({
-                        ...editingAddress,
-                        city: e.target.value,
-                      })
-                    }
-                  />
-                </Grid>
-                <Grid sx={{ xs: 6, md: 3 }}>
-                  <TextField
-                    label="UF"
-                    fullWidth
-                    value={editingAddress.state}
-                    onChange={(e) =>
-                      setEditingAddress({
-                        ...editingAddress,
-                        state: e.target.value,
-                      })
-                    }
-                  />
-                </Grid>
-                <Grid sx={{ xs: 6, md: 3 }}>
-                  <TextField
-                    label="CEP"
-                    fullWidth
-                    value={editingAddress.zip}
-                    onChange={(e) =>
-                      setEditingAddress({
-                        ...editingAddress,
-                        zip: e.target.value,
-                      })
-                    }
-                  />
-                </Grid>
-              </Grid>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={!!editingAddress.isDefault}
-                    onChange={(_, v) =>
-                      setEditingAddress({ ...editingAddress, isDefault: v })
-                    }
-                  />
-                }
-                label="Definir como padrão"
-              />
-            </Stack>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddressDialogOpen(false)}>Cancelar</Button>
-          <Button variant="contained" onClick={saveAddress}>
-            Salvar
-          </Button>
-        </DialogActions>
-      </Dialog>
+
       {/* Dialogs: Cartão */}
       <Dialog
         open={cardDialogOpen}
@@ -890,7 +481,17 @@ export default function ProfilePage() {
   );
 }
 
-function ProfileInfo() {
+interface IProfileInfoProps {}
+
+function ProfileInfo({}: IProfileInfoProps) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const { user, avatar, userOrdersInfo } = useProfileContext();
+
+  if (!user || !avatar || !userOrdersInfo) {
+    return;
+  }
+
   return (
     <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}>
       <Stack
@@ -902,13 +503,13 @@ function ProfileInfo() {
         <Stack direction="row" alignItems="center" gap={2}>
           <Box position="relative">
             <Avatar
-              src={avatarPreview}
-              alt={user.name}
+              src={avatar.imageUrl}
+              alt={avatar.imageAlt}
               sx={{ width: 80, height: 80 }}
             />
             <IconButton
               size="small"
-              onClick={onAvatarClick}
+              onClick={() => {}}
               sx={{
                 position: "absolute",
                 right: -6,
@@ -925,7 +526,7 @@ function ProfileInfo() {
               type="file"
               accept="image/*"
               hidden
-              onChange={onAvatarChange}
+              onChange={() => console.log("avatar change")}
             />
           </Box>
           <Box>
@@ -936,10 +537,13 @@ function ProfileInfo() {
             <Stack direction="row" gap={1} sx={{ mt: 1 }} flexWrap="wrap">
               <Chip
                 icon={<ReceiptLongRoundedIcon />}
-                label={`${ordersCount} pedidos`}
+                label={`${userOrdersInfo.ordersCount} pedidos`}
               />
-              <Chip label={`${points} pontos`} color="success" />
-              <Chip label={`${coupons} cupons`} color="primary" />
+              <Chip label={`${userOrdersInfo.points} pontos`} color="success" />
+              <Chip
+                label={`${userOrdersInfo.coupons} cupons`}
+                color="primary"
+              />
             </Stack>
           </Box>
         </Stack>
@@ -953,5 +557,320 @@ function ProfileInfo() {
         </Stack>
       </Stack>
     </Paper>
+  );
+}
+
+interface IPersonalInfoProps {}
+
+function PersonalInfo({}: IPersonalInfoProps) {
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const { user } = useProfileContext();
+
+  const { formData, errors, handleInputChange, verifyErrors, resetForm } =
+    useProfileForm();
+
+  if (!user) {
+    return;
+  }
+
+  useEffect(() => {}, []);
+
+  const onSubmit = async (event: FormEvent) => {
+    setLoading(true);
+    event.preventDefault();
+    if (verifyErrors()) {
+      //   const result = await login(formData.email, formData.password);
+      //   if (result) navigate("/home");
+    } else {
+    }
+    setLoading(false);
+  };
+
+  const onCancel = async (_: FormEvent) => {
+    resetForm({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      cpf: user.cpf,
+      birthdate: user.birthdate,
+    });
+  };
+
+  return (
+    <ProfileSection title="Dados pessoais" icon={<EditRoundedIcon />}>
+      <Grid container spacing={2}>
+        <form onSubmit={onSubmit}>
+          <Grid sx={{ xs: 12, md: 6 }}>
+            <TextField
+              label="Nome completo"
+              fullWidth
+              value={formData.name}
+              error={Boolean(errors.email)}
+              helperText={errors.email || ""}
+              onChange={handleInputChange}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid sx={{ xs: 12, md: 6 }}>
+            <TextField
+              label="E-mail"
+              fullWidth
+              value={formData.email}
+              error={Boolean(errors.email)}
+              helperText={errors.email || ""}
+              onChange={handleInputChange}
+              disabled={true}
+            />
+          </Grid>
+          <Grid sx={{ xs: 12, md: 6 }}>
+            <TextField
+              label="Telefone"
+              fullWidth
+              value={formData.phone}
+              error={Boolean(errors.phone)}
+              helperText={errors.phone || ""}
+              onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid sx={{ xs: 12, md: 3 }}>
+            <TextField
+              label="CPF"
+              fullWidth
+              value={formData.cpf}
+              error={Boolean(errors.cpf)}
+              helperText={errors.cpf || ""}
+              onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid sx={{ xs: 12, md: 3 }}>
+            <TextField
+              type="date"
+              label="Nascimento"
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                },
+              }}
+              fullWidth
+              value={formData.birthdate}
+              error={Boolean(errors.birthdate)}
+              helperText={errors.birthdate || ""}
+              onChange={handleInputChange}
+            />
+          </Grid>
+        </form>
+      </Grid>
+      <Stack direction="row" gap={1} sx={{ mt: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<SaveRoundedIcon />}
+          onClick={onSubmit}
+          disabled={loading}
+        >
+          Salvar
+        </Button>
+        <Button onClick={onCancel}>Desfazer</Button>
+      </Stack>
+    </ProfileSection>
+  );
+}
+
+interface IAddressInfoProps {
+  setSnack: (_: any) => void;
+}
+
+function AddressInfo({ setSnack }: IAddressInfoProps) {
+  const {
+    addresses,
+    // deleteAddress
+  } = useProfileContext();
+
+  const { resetForm } = useAddressForm();
+
+  if (!addresses) {
+    return;
+  }
+
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"EDIT" | "NEW">("NEW");
+
+  // handlers - address
+  const openNewAddress = () => {
+    setDialogMode("NEW");
+    setAddressDialogOpen(true);
+  };
+
+  const openEditAddress = (a: any) => {
+    resetForm({ ...a });
+    setDialogMode("EDIT");
+    setAddressDialogOpen(true);
+  };
+
+  const setDefaultAddress = (id: string) => {
+    // updateAddress(id);
+  };
+
+  const removeAddress = (id: string) => {
+    // deleteAddress(id);
+    setSnack({ open: true, msg: "Endereço removido.", severity: "warning" });
+  };
+
+  return (
+    <ProfileSection title="Endereços" icon={<LocationOnRoundedIcon />}>
+      <Stack gap={1.5} sx={{ width: 1 }}>
+        {addresses.map((a) => (
+          <Paper
+            key={a.id}
+            variant="outlined"
+            sx={{ p: 1.5, borderRadius: 2, width: 1 }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              alignItems={{ xs: "start", sm: "center" }}
+              justifyContent="space-between"
+              gap={1}
+            >
+              <Stack gap={0.5}>
+                <Typography fontWeight={700}>
+                  {a.label} {a.isDefault ? "• padrão" : ""}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {a.street + " " + a.neighborhood}
+                  {a.complement ? `, ${a.complement}` : ""} — {a.city}/{a.state}{" "}
+                  • {a.zipCode}
+                </Typography>
+              </Stack>
+              <Stack direction="row" gap={1} flexWrap="wrap">
+                {!a.isDefault && (
+                  <Button size="small" onClick={() => setDefaultAddress(a.id)}>
+                    Definir como padrão
+                  </Button>
+                )}
+                <Button size="small" onClick={() => openEditAddress(a)}>
+                  Editar
+                </Button>
+                <Button
+                  size="small"
+                  color="error"
+                  onClick={() => removeAddress(a.id)}
+                >
+                  Remover
+                </Button>
+              </Stack>
+            </Stack>
+          </Paper>
+        ))}
+        <Button
+          startIcon={<AddRoundedIcon />}
+          onClick={openNewAddress}
+          variant="outlined"
+        >
+          Adicionar endereço
+        </Button>
+      </Stack>
+      {/* Dialogs: Endereço */}
+      <AddressDialog
+        id={""}
+        dialogMode={dialogMode}
+        addressDialogOpen={addressDialogOpen}
+        setAddressDialogOpen={setAddressDialogOpen}
+      ></AddressDialog>
+    </ProfileSection>
+  );
+}
+
+interface IAddressDialogProps {
+  id: string;
+  dialogMode: "EDIT" | "NEW";
+  addressDialogOpen: boolean;
+  setAddressDialogOpen: (_: boolean) => void;
+}
+
+function AddressDialog({
+  dialogMode,
+  addressDialogOpen,
+  setAddressDialogOpen,
+}: IAddressDialogProps) {
+  const { formData, handleInputChange } = useAddressForm();
+
+  const onSubmit = () => {
+    // dialogMode === "EDIT" ? upsertAddress() ;
+  };
+
+  return (
+    <Dialog
+      open={addressDialogOpen}
+      onClose={() => setAddressDialogOpen(false)}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle>
+        {dialogMode === "EDIT" ? "Editar endereço" : "Novo endereço"}
+      </DialogTitle>
+      <DialogContent dividers>
+        <Stack gap={1.5} sx={{ mt: 0.5 }}>
+          <TextField
+            label="Rótulo"
+            value={formData.label}
+            onChange={handleInputChange}
+            fullWidth
+          />
+          <TextField
+            label="Logradouro"
+            value={formData.street}
+            onChange={handleInputChange}
+            fullWidth
+          />
+          <TextField
+            label="complemento"
+            value={formData.complement}
+            onChange={handleInputChange}
+            fullWidth
+          />
+          <Grid container spacing={2}>
+            <Grid sx={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Cidade"
+                fullWidth
+                value={formData.city}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid sx={{ xs: 6, md: 3 }}>
+              <TextField
+                label="UF"
+                fullWidth
+                value={formData.state}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid sx={{ xs: 6, md: 3 }}>
+              <TextField
+                label="CEP"
+                fullWidth
+                value={formData.zipCode}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </Grid>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={!!formData.isDefault}
+                onChange={handleInputChange}
+              />
+            }
+            label="Definir como padrão"
+          />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setAddressDialogOpen(false)}>Cancelar</Button>
+        <Button variant="contained" onClick={onSubmit}>
+          Salvar
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

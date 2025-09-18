@@ -5,5 +5,5 @@ export type FormHookType = {
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleErrorChange?: (form: any) => void;
   verifyErrors: () => boolean;
-  resetForm: () => void;
+  resetForm: (data?: any) => void;
 };
