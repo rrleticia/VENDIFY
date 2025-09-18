@@ -1,6 +1,6 @@
-import type { Product } from "../types/product";
+import type { ProductType } from "@common/types/ProductType";
 
-export const products: Product[] = [
+export const products: ProductType[] = [
   {
     id: 1,
     name: "Camiseta Básica",
@@ -9,6 +9,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p1/800/600",
     description: "Camiseta 100% algodão, confortável e versátil.",
     stock: 22,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 2,
@@ -18,6 +21,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p2/800/600",
     description: "Tênis leve para o dia a dia.",
     stock: 10,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 3,
@@ -27,6 +33,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p3/800/600",
     description: "Som equilibrado e bateria de longa duração.",
     stock: 15,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 4,
@@ -36,6 +45,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p4/800/600",
     description: "Resistente à água e com cronômetro.",
     stock: 7,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 5,
@@ -45,6 +57,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p1/800/600",
     description: "Camiseta 100% algodão, confortável e versátil.",
     stock: 22,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 6,
@@ -54,6 +69,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p2/800/600",
     description: "Tênis leve para o dia a dia.",
     stock: 10,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 7,
@@ -63,6 +81,9 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p3/800/600",
     description: "Som equilibrado e bateria de longa duração.",
     stock: 15,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
   {
     id: 8,
@@ -72,5 +93,8 @@ export const products: Product[] = [
     image: "https://picsum.photos/seed/p4/800/600",
     description: "Resistente à água e com cronômetro.",
     stock: 7,
+    rating: 4.8,
+    ratingsCount: 152,
+    tags: ["mecânico", "rgb", "hot-swap"],
   },
 ];

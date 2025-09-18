@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Box,
   Container,
@@ -330,73 +330,10 @@ export default function ProfilePage() {
   };
 
   return (
-    <Container sx={{ py: 3, maxWidth: 1200 }}>
-      {/* Header */}
-      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2 }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          alignItems="center"
-          justifyContent="space-between"
-          gap={2}
-        >
-          <Stack direction="row" alignItems="center" gap={2}>
-            <Box position="relative">
-              <Avatar
-                src={avatarPreview}
-                alt={user.name}
-                sx={{ width: 80, height: 80 }}
-              />
-              <IconButton
-                size="small"
-                onClick={onAvatarClick}
-                sx={{
-                  position: "absolute",
-                  right: -6,
-                  bottom: -6,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  bgcolor: "background.paper",
-                }}
-              >
-                <CameraAltRoundedIcon fontSize="small" />
-              </IconButton>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={onAvatarChange}
-              />
-            </Box>
-            <Box>
-              <Typography variant="h6" fontWeight={800}>
-                {user.name}
-              </Typography>
-              <Typography color="text.secondary">{user.email}</Typography>
-              <Stack direction="row" gap={1} sx={{ mt: 1 }} flexWrap="wrap">
-                <Chip
-                  icon={<ReceiptLongRoundedIcon />}
-                  label={`${ordersCount} pedidos`}
-                />
-                <Chip label={`${points} pontos`} color="success" />
-                <Chip label={`${coupons} cupons`} color="primary" />
-              </Stack>
-            </Box>
-          </Stack>
-          <Stack direction="row" gap={1}>
-            <Button component={RouterLink} to="/orders">
-              Meus pedidos
-            </Button>
-            <Button color="inherit" startIcon={<LogoutRoundedIcon />}>
-              Sair
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-
-      <Grid container spacing={2}>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Grid spacing={2} sx={{ width: 1 }}>
         {/* Coluna esquerda: Perfil, Endereços, Cartões */}
-        <Grid sx={{ xs: 12, md: 8 }}>
+        <Grid sx={{ xs: 12, md: 6 }}>
           {/* Dados Pessoais */}
           <Section title="Dados pessoais" icon={<EditRoundedIcon />}>
             <Grid container spacing={2}>
@@ -466,12 +403,12 @@ export default function ProfilePage() {
 
           {/* Endereços */}
           <Section title="Endereços" icon={<LocationOnRoundedIcon />}>
-            <Stack gap={1.5}>
+            <Stack gap={1.5} sx={{ width: 1 }}>
               {addresses.map((a) => (
                 <Paper
                   key={a.id}
                   variant="outlined"
-                  sx={{ p: 1.5, borderRadius: 2 }}
+                  sx={{ p: 1.5, borderRadius: 2, width: 1 }}
                 >
                   <Stack
                     direction={{ xs: "column", sm: "row" }}
@@ -531,12 +468,12 @@ export default function ProfilePage() {
 
           {/* Pagamentos */}
           <Section title="Pagamentos" icon={<CreditCardRoundedIcon />}>
-            <Stack gap={1.5}>
+            <Stack gap={1.5} sx={{ width: 1 }}>
               {cards.map((c) => (
                 <Paper
                   key={c.id}
                   variant="outlined"
-                  sx={{ p: 1.5, borderRadius: 2 }}
+                  sx={{ p: 1.5, borderRadius: 2, width: 1 }}
                 >
                   <Stack
                     direction={{ xs: "column", sm: "row" }}
@@ -596,7 +533,7 @@ export default function ProfilePage() {
         </Grid>
 
         {/* Coluna direita: Segurança, Notificações, Danger */}
-        <Grid sx={{ xs: 12, md: 4 }}>
+        <Grid sx={{ xs: 12, md: 6 }}>
           {/* Segurança & Privacidade */}
           <Section
             title="Segurança & privacidade"
@@ -709,7 +646,7 @@ export default function ProfilePage() {
           </Section>
         </Grid>
       </Grid>
-
+      <ProfileInfo></ProfileInfo>
       {/* Dialogs: Endereço */}
       <Dialog
         open={addressDialogOpen}
@@ -821,7 +758,6 @@ export default function ProfilePage() {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Dialogs: Cartão */}
       <Dialog
         open={cardDialogOpen}
@@ -934,7 +870,6 @@ export default function ProfilePage() {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Snackbar */}
       <Snackbar
         open={snack.open}
@@ -955,26 +890,68 @@ export default function ProfilePage() {
   );
 }
 
-// ---------------- Small Section Component ----------------
-function Section({
-  title,
-  icon,
-  children,
-}: {
-  title: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function ProfileInfo() {
   return (
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2 }}>
-      <Stack direction="row" alignItems="center" gap={1}>
-        {icon}
-        <Typography variant="h6" fontWeight={800}>
-          {title}
-        </Typography>
+    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        alignItems="center"
+        justifyContent="space-between"
+        gap={2}
+      >
+        <Stack direction="row" alignItems="center" gap={2}>
+          <Box position="relative">
+            <Avatar
+              src={avatarPreview}
+              alt={user.name}
+              sx={{ width: 80, height: 80 }}
+            />
+            <IconButton
+              size="small"
+              onClick={onAvatarClick}
+              sx={{
+                position: "absolute",
+                right: -6,
+                bottom: -6,
+                border: "1px solid",
+                borderColor: "divider",
+                bgcolor: "background.paper",
+              }}
+            >
+              <CameraAltRoundedIcon fontSize="small" />
+            </IconButton>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={onAvatarChange}
+            />
+          </Box>
+          <Box>
+            <Typography variant="h6" fontWeight={800}>
+              {user.name}
+            </Typography>
+            <Typography color="text.secondary">{user.email}</Typography>
+            <Stack direction="row" gap={1} sx={{ mt: 1 }} flexWrap="wrap">
+              <Chip
+                icon={<ReceiptLongRoundedIcon />}
+                label={`${ordersCount} pedidos`}
+              />
+              <Chip label={`${points} pontos`} color="success" />
+              <Chip label={`${coupons} cupons`} color="primary" />
+            </Stack>
+          </Box>
+        </Stack>
+        <Stack direction="row" gap={1}>
+          <Button component={RouterLink} to="/orders">
+            Meus pedidos
+          </Button>
+          <Button color="inherit" startIcon={<LogoutRoundedIcon />}>
+            Sair
+          </Button>
+        </Stack>
       </Stack>
-      <Divider sx={{ my: 1.5 }} />
-      {children}
     </Paper>
   );
 }

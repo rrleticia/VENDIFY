@@ -1,5 +1,5 @@
-import AppFooter from "@components/AppFooter";
-import AuthHeader from "@components/AuthHeader";
+import AppFooter from "@components/AppStructure/AppFooter";
+import AuthHeader from "@components/AppStructure/AuthHeader";
 import { Box } from "@mui/material";
 import { Outlet } from "react-router";
 

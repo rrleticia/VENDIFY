@@ -17,6 +17,7 @@ import {
   FormLabel,
   TextField,
   CircularProgress,
+  Rating,
 } from "@mui/material";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
@@ -26,7 +27,7 @@ import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import { useParams, Link, useNavigate, Navigate } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../../components/Pages/ProductCard";
 
 function formatBRL(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -209,9 +210,35 @@ export default function ProductDetailsPage() {
             <Typography variant="h4" fontWeight={800} lineHeight={1.2}>
               {product.name}
             </Typography>
+
+            {/* AVALIAÇÃO (estrelinhas) */}
+            {typeof product.rating === "number" && (
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mt: 0.5 }}
+              >
+                <Rating value={product.rating} precision={0.5} readOnly />
+                <Typography variant="body2" color="text.secondary">
+                  {product.rating.toFixed(1)}
+                  {product.ratingsCount ? ` (${product.ratingsCount})` : ""}
+                </Typography>
+              </Stack>
+            )}
+
             <Typography variant="subtitle1" color="text.secondary">
               {product.category}
             </Typography>
+
+            {/* TAGS */}
+            {!!product.tags?.length && (
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                {product.tags.map((t) => (
+                  <Chip key={t} size="small" label={t} variant="outlined" />
+                ))}
+              </Stack>
+            )}
 
             {isOutOfStock ? (
               <Alert severity="error" variant="outlined">

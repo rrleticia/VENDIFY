@@ -7,15 +7,11 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
-import { Link, NavLink, type SubmitFunction } from "react-router";
+import { Link, NavLink } from "react-router";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import AppSearch from "./AppSearch";
 
-interface IAppSearchProps {
-  search: string; // valor inicial (vem do loader: ?name=...)
-  onSearch: SubmitFunction; // useSubmit() da página
-}
+interface IAppSearchProps {}
 
 function UserButton() {
   const logged = false;
@@ -39,7 +35,7 @@ function UserButton() {
   }
 }
 
-export default function AppHeader({ search, onSearch }: IAppSearchProps) {
+export default function AppHeader({}: IAppSearchProps) {
   return (
     <AppBar
       position="sticky"
@@ -61,8 +57,6 @@ export default function AppHeader({ search, onSearch }: IAppSearchProps) {
             VENDIFY
           </Typography>
         </Stack>
-
-        <AppSearch search={search} onSearch={onSearch} debounceMs={400} />
 
         <Stack direction="row" sx={{ flex: 1, justifyContent: "end" }}>
           <Button component={NavLink} to="/catalog" color="inherit">

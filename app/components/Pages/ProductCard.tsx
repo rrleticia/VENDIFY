@@ -5,7 +5,8 @@ import {
   Typography,
   CardActions,
   Button,
-  Box,
+  Chip,
+  Stack,
 } from "@mui/material";
 import { Link } from "react-router";
 import type { ProductType } from "@common/types/ProductType";
@@ -37,10 +38,12 @@ export default function ProductCard({ product }: { product: ProductType }) {
           borderTopRightRadius: 12,
         }}
       />
+
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
         <Typography variant="subtitle1" fontWeight="bold" gutterBottom noWrap>
           {product.name}
         </Typography>
+
         <Typography
           variant="caption"
           color="text.secondary"
@@ -49,13 +52,30 @@ export default function ProductCard({ product }: { product: ProductType }) {
         >
           {product.category}
         </Typography>
+
         <Typography variant="h6" mt={1}>
           {product.price.toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL",
           })}
         </Typography>
+
+        {/* TAGS — sempre abaixo do preço */}
+        {!!product.tags?.length && (
+          <Stack
+            direction="row"
+            spacing={0.5}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{ mt: 1 }}
+          >
+            {product.tags.map((t) => (
+              <Chip key={t} size="small" label={t} variant="outlined" />
+            ))}
+          </Stack>
+        )}
       </CardContent>
+
       <CardActions
         disableSpacing
         sx={{
@@ -74,7 +94,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
           size="small"
           fullWidth
           disableRipple
-          sx={{ m: 0 }} // <- elimina margem
+          sx={{ m: 0 }}
         >
           Detalhes
         </Button>
@@ -84,7 +104,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
           size="medium"
           fullWidth
           disableElevation
-          sx={{ m: 0 }} // <- elimina margem
+          sx={{ m: 0 }}
         >
           Comprar
         </Button>

@@ -1,3 +1,8 @@
+// CartPage.tsx — versão refatorada (sem cupom no carrinho)
+// - Remove toda a lógica e UI de cupom
+// - Mantém apenas edição de itens + frete estimado + total
+// - Checkout continuará sendo o único lugar onde se aplica cupom/forma de entrega/pagamento
+
 import { useMemo, useState } from "react";
 import {
   Box,
@@ -6,16 +11,13 @@ import {
   IconButton,
   Button,
   Divider,
-  TextField,
   Stack,
-  Chip,
   Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import DeleteSweepRoundedIcon from "@mui/icons-material/DeleteSweepRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import { Link as RouterLink } from "react-router";
@@ -76,55 +78,17 @@ function calcShipping(subtotal: number) {
   return subtotal >= 400 ? 0 : 29.9;
 }
 
-// cupons mock: VEM10 (10%), FRETEGRATIS (zera frete)
-function applyCoupon(
-  code: string,
-  { subtotal, shipping }: { subtotal: number; shipping: number }
-) {
-  const normalized = code.trim().toUpperCase();
-  let discount = 0;
-  let newShipping = shipping;
-  let label: string | null = null;
-
-  if (normalized === "VEM10") {
-    discount = subtotal * 0.1;
-    label = "10% off";
-  } else if (normalized === "FRETEGRATIS") {
-    newShipping = 0;
-    label = "Frete grátis";
-  }
-
-  return { discount, shipping: newShipping, label };
-}
-
 // ---------- Component ----------
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>(INITIAL_CART);
-  const [coupon, setCoupon] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
   const subtotal = useMemo(
     () => items.reduce((acc, it) => acc + it.product.price * it.qty, 0),
     [items]
   );
 
-  const baseShipping = useMemo(() => calcShipping(subtotal), [subtotal]);
-
-  const {
-    discount,
-    shipping,
-    label: couponLabel,
-  } = useMemo(() => {
-    if (!appliedCoupon)
-      return {
-        discount: 0,
-        shipping: baseShipping,
-        label: null as string | null,
-      };
-    return applyCoupon(appliedCoupon, { subtotal, shipping: baseShipping });
-  }, [appliedCoupon, subtotal, baseShipping]);
-
-  const total = Math.max(0, subtotal - discount) + shipping;
+  const shipping = useMemo(() => calcShipping(subtotal), [subtotal]);
+  const total = Math.max(0, subtotal) + shipping;
 
   const inc = (id: number) =>
     setItems((prev) =>
@@ -148,12 +112,6 @@ export default function CartPage() {
     setItems((prev) => prev.filter((it) => it.product.id !== id));
 
   const clear = () => setItems([]);
-
-  const handleApplyCoupon = () => setAppliedCoupon(coupon.trim() || null);
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCoupon("");
-  };
 
   if (!items.length) {
     return (
@@ -295,7 +253,7 @@ export default function CartPage() {
           ))}
         </Paper>
 
-        {/* Resumo */}
+        {/* Resumo (sem cupom) */}
         <Stack
           sx={{
             minWidth: { md: 340 },
@@ -316,24 +274,12 @@ export default function CartPage() {
             <Stack direction="row" justifyContent="space-between" py={0.5}>
               <Stack direction="row" alignItems="center" gap={0.5}>
                 <LocalShippingRoundedIcon fontSize="small" />
-                <Typography color="text.secondary">Frete</Typography>
+                <Typography color="text.secondary">Frete (estimado)</Typography>
               </Stack>
               <Typography>
                 {shipping === 0 ? "Grátis" : formatBRL(shipping)}
               </Typography>
             </Stack>
-
-            {discount > 0 && (
-              <Stack direction="row" justifyContent="space-between" py={0.5}>
-                <Stack direction="row" alignItems="center" gap={0.5}>
-                  <DiscountRoundedIcon fontSize="small" />
-                  <Typography color="success.main">Desconto</Typography>
-                </Stack>
-                <Typography color="success.main">
-                  - {formatBRL(discount)}
-                </Typography>
-              </Stack>
-            )}
 
             <Divider sx={{ my: 1.5 }} />
 
@@ -344,30 +290,6 @@ export default function CartPage() {
             >
               <Typography variant="h6">Total</Typography>
               <Typography variant="h6">{formatBRL(total)}</Typography>
-            </Stack>
-
-            {appliedCoupon && (
-              <Chip
-                label={`Cupom aplicado: ${appliedCoupon}${couponLabel ? ` (${couponLabel})` : ""}`}
-                onDelete={handleRemoveCoupon}
-                sx={{ mt: 1 }}
-                color="success"
-                variant="outlined" // funciona em MUI v6; se não, troque para "outlined"
-              />
-            )}
-
-            <Stack direction="row" gap={1} sx={{ mt: 2 }}>
-              <TextField
-                size="small"
-                fullWidth
-                label="Cupom"
-                placeholder="VEM10 ou FRETEGRATIS"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-              />
-              <Button onClick={handleApplyCoupon} variant="outlined">
-                Aplicar
-              </Button>
             </Stack>
 
             <Button

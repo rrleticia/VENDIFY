@@ -6,13 +6,16 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-  layout("./routes/HomeLayout.tsx", [
-    index("./routes/HomePage.tsx"),
-    route("catalog", "./routes/CatalogPage.tsx"),
-    route("product/:id", "./routes/ProductDetails.tsx"),
-    route("cart", "./routes/CartPage.tsx"),
-    route("orders", "./routes/OrdersPage.tsx"),
-    route("profile", "./routes/ProfilePage.tsx"),
+  layout("./routes/client/HomeLayout.tsx", [
+    index("./routes/client/HomePage.tsx"),
+    route("home", "./routes/auxiliar/RedirectHomePage.tsx"),
+    route("catalog", "./routes/client/CatalogPage.tsx"),
+    route("product/:id", "./routes/client/ProductDetails.tsx"),
+    route("cart", "./routes/client/CartPage.tsx"),
+    route("orders", "./routes/client/OrdersPage.tsx"),
+    route("profile", "./routes/client/ProfilePage.tsx"),
+    route("checkout", "./routes/client/CheckoutPage.tsx"),
+    route("checkout/success", "./routes/client/CheckoutSuccessPage.tsx"),
   ]),
 
   layout("./routes/auth/AuthLayout.tsx", [
@@ -20,5 +23,5 @@ export default [
     route("register", "./routes/auth/RegisterPage.tsx"),
   ]),
 
-  route("*", "./routes/NotFoundPage.tsx"),
+  route("*", "./routes/auxiliar/NotFoundPage.tsx"),
 ] satisfies RouteConfig;

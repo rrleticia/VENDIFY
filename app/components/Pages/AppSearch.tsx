@@ -8,26 +8,24 @@ import {
   Button,
   Stack,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import SearchIcon from "@mui/icons-material/Search"; // <- corrigido
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { Form, type SubmitFunction } from "react-router";
-
-interface IAppSearchProps {
-  search: string; // valor inicial (vem do loader: ?name=...)
-  onSearch: SubmitFunction; // useSubmit() da página
-  debounceMs?: number; // opcional (padrão 350ms)
-  autoFocus?: boolean; // opcional (padrão true)
-}
+import { Form, useSearchParams, useSubmit } from "react-router";
 
 const CATALOG_PATH = "/catalog";
 
 export default function AppSearch({
-  search,
-  onSearch,
   debounceMs = 350,
   autoFocus = true,
-}: IAppSearchProps) {
-  const [value, setValue] = useState(search ?? "");
+}: {
+  debounceMs?: number;
+  autoFocus?: boolean;
+}) {
+  const [params] = useSearchParams();
+  const initialName = params.get("name")?.toLowerCase() ?? "";
+
+  const submit = useSubmit();
+  const [value, setValue] = useState(initialName);
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,28 +40,26 @@ export default function AppSearch({
     (target: HTMLFormElement | FormData) => {
       clearTimer();
       timerRef.current = setTimeout(() => {
-        // Importante: garantir action="/catalog" quando for FormData
-        onSearch(target, { replace: true, action: CATALOG_PATH });
+        submit(target, { replace: true, action: CATALOG_PATH });
       }, debounceMs);
     },
-    [onSearch, debounceMs]
+    [submit, debounceMs]
   );
 
-  // Reflete mudanças externas (ex.: voltar no histórico)
-  useEffect(() => {
-    setValue(search ?? "");
-  }, [search]);
+  // cleanup do debounce ao desmontar
+  useEffect(() => () => clearTimer(), []);
 
-  // Dispara submit com debounce ao digitar
+  // reflete mudanças externas na URL (ex.: back/forward)
+  useEffect(() => {
+    setValue(initialName);
+  }, [initialName]);
+
   useEffect(() => {
     if (!formRef.current) return;
-
     if (skipNextDebounceRef.current) {
       skipNextDebounceRef.current = false;
       return;
     }
-
-    // Se valor vazio, remover "name" da query antes de submeter.
     const target =
       value.trim() !== ""
         ? formRef.current
@@ -72,32 +68,27 @@ export default function AppSearch({
             fd.delete("name");
             return fd;
           })();
-
     debouncedSubmit(target);
   }, [value, debouncedSubmit]);
 
   const handleClear = () => {
     setValue("");
     if (!formRef.current) return;
-
-    // Submete imediatamente SEM o parâmetro ?name e indo para /catalog
     clearTimer();
     const fd = new FormData(formRef.current);
     fd.delete("name");
     skipNextDebounceRef.current = true;
-    onSearch(fd, { replace: true, action: CATALOG_PATH });
+    submit(fd, { replace: true, action: CATALOG_PATH });
   };
 
   const handleSubmitClick = () => {
     if (!formRef.current) return;
-
     if (value.trim() === "") {
       const fd = new FormData(formRef.current);
       fd.delete("name");
-      onSearch(fd, { replace: true, action: CATALOG_PATH });
+      submit(fd, { replace: true, action: CATALOG_PATH });
     } else {
-      // Mesmo com form, podemos reforçar a action
-      onSearch(formRef.current, { replace: true, action: CATALOG_PATH });
+      submit(formRef.current, { replace: true, action: CATALOG_PATH });
     }
   };
 
@@ -106,51 +97,47 @@ export default function AppSearch({
       <Form
         method="get"
         replace
-        action={CATALOG_PATH} // <- SEMPRE envia para /catalog
+        action={CATALOG_PATH}
         ref={formRef}
         onSubmit={(e) => {
-          // Enter com vazio: remove ?name e continua em /catalog
           if (value.trim() === "" && formRef.current) {
             e.preventDefault();
             const fd = new FormData(formRef.current);
             fd.delete("name");
-            onSearch(fd, { replace: true, action: CATALOG_PATH });
+            submit(fd, { replace: true, action: CATALOG_PATH });
           }
         }}
       >
         <Stack direction="row" gap={1}>
           <TextField
             fullWidth
-            name="name" // ESSENCIAL para ?name=...
+            name="name"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             autoFocus={autoFocus}
             placeholder="Buscar por produto, categoria, marca..."
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: value ? (
-                  <InputAdornment position="end">
-                    <Tooltip title="Limpar">
-                      <IconButton
-                        aria-label="limpar busca"
-                        onClick={handleClear}
-                        edge="end"
-                        type="button" // evita submit acidental
-                      >
-                        <CloseRoundedIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </InputAdornment>
-                ) : null,
-              },
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+              endAdornment: value ? (
+                <InputAdornment position="end">
+                  <Tooltip title="Limpar">
+                    <IconButton
+                      aria-label="limpar busca"
+                      onClick={handleClear}
+                      edge="end"
+                      type="button"
+                    >
+                      <CloseRoundedIcon />
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              ) : null,
             }}
           />
-
           <Button
             variant="contained"
             type="button"
