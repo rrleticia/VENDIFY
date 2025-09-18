@@ -326,10 +326,7 @@ function getThemedComponents(mode: "light" | "dark"): ThemeOptions {
 
 // ---------- Theme Factory ----------
 export function createAppTheme(mode: "light" | "dark" = "light"): Theme {
-  const base = createTheme(deepmerge(commonOptions, getDesignTokens(mode)));
-  const withComponents = createTheme(
-    deepmerge(base, getThemedComponents(mode))
-  );
+  const base = createTheme(commonOptions);
 
-  return responsiveFontSizes(withComponents);
+  return responsiveFontSizes(base);
 }

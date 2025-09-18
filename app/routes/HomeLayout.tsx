@@ -1,8 +1,7 @@
-import type { ProductType } from "@common/types/ProductType";
 import AppFooter from "@components/AppFooter";
 import AppHeader from "@components/AppHeader";
-import { Box, Container } from "@mui/material";
-import { useSubmit } from "react-router";
+import { Box, Paper, Stack, Typography } from "@mui/material";
+import { useLocation, useNavigation, useSubmit } from "react-router";
 import {
   Outlet,
   useLoaderData,
@@ -13,18 +12,43 @@ export async function clientLoader({ request }: ClientLoaderFunctionArgs) {
   const url = new URL(request.url);
   const name = url.searchParams.get("name")?.toLowerCase() ?? "";
 
-  const all: ProductType[] = [];
-  const products = name
-    ? all.filter((p) => p.name.toLowerCase().includes(name))
-    : all;
-
   // In SPA mode just return a plain object
-  return { products, name };
+  return { name };
+}
+
+function NavDebug() {
+  const navigation = useNavigation();
+  const location = useLocation();
+  if (navigation.state === "idle") return null;
+
+  return (
+    <Paper
+      elevation={4}
+      sx={{
+        position: "fixed",
+        right: 12,
+        top: 0,
+        p: 1.5,
+        zIndex: 9999,
+        borderRadius: 2,
+      }}
+    >
+      <Stack>
+        <Typography variant="caption">NAV STATE: {navigation.state}</Typography>
+        <Typography variant="caption">
+          from: {location.pathname + location.search}
+        </Typography>
+        <Typography variant="caption">
+          to: {navigation.location?.pathname ?? "—"}
+          {navigation.location?.search ?? ""}
+        </Typography>
+      </Stack>
+    </Paper>
+  );
 }
 
 export default function HomeLayout() {
-  const { products, name } = useLoaderData() as {
-    products: ProductType[];
+  const { name } = useLoaderData() as {
     name: string;
   };
 
@@ -32,6 +56,7 @@ export default function HomeLayout() {
 
   return (
     <>
+      <NavDebug></NavDebug>
       <AppHeader search={name} onSearch={submit} />
 
       <Box sx={{ paddingY: 4, flex: 1, marginX: 9 }}>

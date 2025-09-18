@@ -1,8 +1,6 @@
-// AppSearch.tsx
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
-  Typography,
   TextField,
   InputAdornment,
   IconButton,
@@ -20,6 +18,8 @@ interface IAppSearchProps {
   debounceMs?: number; // opcional (padrão 350ms)
   autoFocus?: boolean; // opcional (padrão true)
 }
+
+const CATALOG_PATH = "/catalog";
 
 export default function AppSearch({
   search,
@@ -42,7 +42,8 @@ export default function AppSearch({
     (target: HTMLFormElement | FormData) => {
       clearTimer();
       timerRef.current = setTimeout(() => {
-        onSearch(target, { replace: true });
+        // Importante: garantir action="/catalog" quando for FormData
+        onSearch(target, { replace: true, action: CATALOG_PATH });
       }, debounceMs);
     },
     [onSearch, debounceMs]
@@ -58,7 +59,6 @@ export default function AppSearch({
     if (!formRef.current) return;
 
     if (skipNextDebounceRef.current) {
-      // Se acabamos de limpar e submetemos imediatamente, ignorar este ciclo.
       skipNextDebounceRef.current = false;
       return;
     }
@@ -80,45 +80,41 @@ export default function AppSearch({
     setValue("");
     if (!formRef.current) return;
 
-    // Submete imediatamente SEM o parâmetro ?name
+    // Submete imediatamente SEM o parâmetro ?name e indo para /catalog
     clearTimer();
     const fd = new FormData(formRef.current);
     fd.delete("name");
     skipNextDebounceRef.current = true;
-    onSearch(fd, { replace: true });
+    onSearch(fd, { replace: true, action: CATALOG_PATH });
   };
 
   const handleSubmitClick = () => {
     if (!formRef.current) return;
-    // Clique em "Buscar": se vazio, removemos 'name' da URL;
-    // senão, submetemos o form normalmente.
+
     if (value.trim() === "") {
       const fd = new FormData(formRef.current);
       fd.delete("name");
-      onSearch(fd, { replace: true });
+      onSearch(fd, { replace: true, action: CATALOG_PATH });
     } else {
-      onSearch(formRef.current, { replace: true });
+      // Mesmo com form, podemos reforçar a action
+      onSearch(formRef.current, { replace: true, action: CATALOG_PATH });
     }
   };
 
   return (
-    <Box
-      sx={{
-        flex: 1,
-        alignItems: "center",
-      }}
-    >
+    <Box sx={{ flex: 1, alignItems: "center" }}>
       <Form
         method="get"
         replace
+        action={CATALOG_PATH} // <- SEMPRE envia para /catalog
         ref={formRef}
         onSubmit={(e) => {
-          // Garantir remoção do ?name quando vazio ao pressionar Enter.
+          // Enter com vazio: remove ?name e continua em /catalog
           if (value.trim() === "" && formRef.current) {
             e.preventDefault();
             const fd = new FormData(formRef.current);
             fd.delete("name");
-            onSearch(fd, { replace: true });
+            onSearch(fd, { replace: true, action: CATALOG_PATH });
           }
         }}
       >

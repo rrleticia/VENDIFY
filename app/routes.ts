@@ -9,6 +9,10 @@ export default [
   layout("./routes/HomeLayout.tsx", [
     index("./routes/HomePage.tsx"),
     route("catalog", "./routes/CatalogPage.tsx"),
+    route("product/:id", "./routes/ProductDetails.tsx"),
+    route("cart", "./routes/CartPage.tsx"),
+    route("orders", "./routes/OrdersPage.tsx"),
+    route("profile", "./routes/ProfilePage.tsx"),
   ]),
 
   layout("./routes/auth/AuthLayout.tsx", [
