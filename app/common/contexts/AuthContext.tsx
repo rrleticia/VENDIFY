@@ -3,7 +3,7 @@ import { useUserContext } from "./UserContext";
 import { useNavigate } from "react-router";
 import { validateExpireStoredStringDate } from "@common/util";
 import { AuthService } from "@app/services";
-import type { IRegisterInterface } from "@app/services/AuthService";
+import type { IRegisterInterface } from "@app/services/api/AuthService";
 
 interface IAuthContextData {
   login: (username: string, password: string) => Promise<void>;

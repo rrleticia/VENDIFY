@@ -11,7 +11,7 @@ import {
 import { Link } from "react-router";
 import type { ProductType } from "@common/types/ProductType";
 
-export default function ProductCard({ product }: { product: ProductType }) {
+export default function ProductCard({ product }: { product: any }) {
   const addItem = (product: any) => {};
 
   return (
@@ -69,7 +69,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
             flexWrap="wrap"
             sx={{ mt: 1 }}
           >
-            {product.tags.map((t) => (
+            {product.tags.map((t: any) => (
               <Chip key={t} size="small" label={t} variant="outlined" />
             ))}
           </Stack>

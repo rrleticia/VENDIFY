@@ -1,4 +1,6 @@
-import { products } from "@common/mocks";
+// src/routes/ProductDetails.tsx (ou onde sua página estiver)
+import { useEffect } from "react";
+import { useParams, Link, Navigate, useNavigate } from "react-router";
 import {
   Box,
   Grid,
@@ -24,123 +26,43 @@ import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import PixRoundedIcon from "@mui/icons-material/PixRounded";
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
-import { useParams, Link, useNavigate, Navigate } from "react-router";
-import { useEffect, useMemo, useState } from "react";
-
 import ProductCard from "../../components/Pages/ProductCard";
+import type { ShippingMethodId } from "@app/services/api/ProductService";
+import {
+  useProductDetails,
+  ProductDetailsProvider,
+} from "@common/contexts/ProductDetailsContext";
 
 function formatBRL(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-// ------- MOCK de cálculo de frete -------
-// Regras simples: base por método + fator por região do CEP (1º dígito)
-// pickup = 0; correios = 18–42; carrier = 25–55
-async function mockCalcFrete(cep: string, methodId: string) {
-  // Simula latência de rede
-  await new Promise((r) => setTimeout(r, 600));
-
-  const first = Number(cep[0] || 9);
-  const regionFactor =
-    [1.0, 1.05, 1.08, 1.1, 1.12, 1.15, 1.18, 1.2, 1.25, 1.3][first] ?? 1.22;
-
-  if (methodId === "pickup") {
-    return { price: 0, eta: "Imediata" };
-  }
-  if (methodId === "correios") {
-    const base = 18 + (first % 5) * 6; // 18–42
-    return { price: Math.round(base * regionFactor), eta: "3–7 dias úteis" };
-  }
-  // carrier
-  const base = 25 + (first % 6) * 5; // 25–55
-  return { price: Math.round(base * regionFactor), eta: "2–5 dias úteis" };
-}
-
-// ------- Hook/ganchos para “real depois” -------
-// Substitua por ViaCEP + Correios/transportadora reais.
-// Ex.: buscar endereço com ViaCEP, faixa de CEP x tabela de frete do lojista, etc.
-async function realCalcFreteFuturo(cep: string, methodId: string) {
-  // TODO integrar com API real
-  return mockCalcFrete(cep, methodId);
-}
-
-export default function ProductDetailsPage() {
-  const navigate = useNavigate();
+function ProductDetailsView() {
   const { id } = useParams();
-  const product = products.find((p) => String(p.id) === String(id));
+  const navigate = useNavigate();
 
+  const { state, loadById, updateCep, selectShipping, calcFreight, total } =
+    useProductDetails();
+
+  useEffect(() => {
+    if (id) void loadById(id);
+  }, [id, loadById]);
+
+  const product = state.product;
   const stock = product?.stock ?? 12;
   const paymentMethods = product?.paymentMethods ?? ["PIX", "Cartão"];
+
   const shippingOptions = product?.shippingOptions ?? [
     { id: "pickup", label: "Retirada no local", icon: "store" as const },
     { id: "correios", label: "Correios", icon: "truck" as const },
     { id: "carrier", label: "Transportadora", icon: "truck" as const },
   ];
 
-  const [shipping, setShipping] = useState<string>(
-    shippingOptions[0]?.id ?? "pickup"
-  );
-  const [cep, setCep] = useState<string>("");
-  const [freteLoading, setFreteLoading] = useState(false);
-  const [fretes, setFretes] = useState<
-    Record<string, { price: number; eta: string }>
-  >({});
-  const [calcTouched, setCalcTouched] = useState(false);
+  const categoryPath = product?.category ? [product.category] : [];
+  const related = state.related ?? [];
 
-  const isOutOfStock = stock <= 0;
-  const isLowStock = !isOutOfStock && stock <= 5;
-
-  const categoryPath = useMemo(
-    () => (product?.category ? [product.category] : []),
-    [product?.category]
-  );
-
-  // Produtos relacionados (mesma categoria, exclui o atual)
-  const related = useMemo(() => {
-    if (!product?.category) return [];
-    return products
-      .filter(
-        (p) =>
-          p.category === product.category && String(p.id) !== String(product.id)
-      )
-      .slice(0, 8);
-  }, [product]);
-
-  const total = useMemo(() => {
-    const freteSel = fretes[shipping]?.price ?? 0;
-    return (product?.price ?? 0) + freteSel;
-  }, [fretes, shipping, product?.price]);
-
-  if (!product) return <Navigate to="/not-found" replace />;
-
-  const handleCalcFrete = async () => {
-    setCalcTouched(true);
-    const clean = cep.replace(/\D/g, "");
-    if (clean.length !== 8) return; // CEP inválido
-    setFreteLoading(true);
-    try {
-      const results: Record<string, { price: number; eta: string }> = {};
-      for (const opt of shippingOptions) {
-        // Trocar para realCalcFreteFuturo quando integrar a API real
-        results[opt.id] = await mockCalcFrete(clean, opt.id);
-      }
-      setFretes(results);
-    } finally {
-      setFreteLoading(false);
-    }
-  };
-
-  // Recalcula automaticamente quando trocar o método (se já tiver frete calculado)
-  useEffect(() => {
-    if (
-      calcTouched &&
-      cep.replace(/\D/g, "").length === 8 &&
-      Object.keys(fretes).length === 0
-    ) {
-      handleCalcFrete();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipping]);
+  const isOutOfStock = (stock ?? 0) <= 0;
+  const isLowStock = !isOutOfStock && (stock ?? 0) <= 5;
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
@@ -181,7 +103,7 @@ export default function ProductDetailsPage() {
               {c}
             </MLink>
           ))}
-          <Typography color="text.primary">{product.name}</Typography>
+          <Typography color="text.primary">{product?.name}</Typography>
         </Breadcrumbs>
       </Stack>
 
@@ -191,8 +113,8 @@ export default function ProductDetailsPage() {
           <Paper variant="outlined" sx={{ p: 2 }}>
             <Box
               component="img"
-              src={product.image}
-              alt={product.name}
+              src={product?.image}
+              alt={product?.name}
               sx={{
                 width: "100%",
                 height: "auto",
@@ -208,33 +130,32 @@ export default function ProductDetailsPage() {
         <Grid sx={{ xs: 12, md: 6 }}>
           <Stack spacing={2}>
             <Typography variant="h4" fontWeight={800} lineHeight={1.2}>
-              {product.name}
+              {product?.name}
             </Typography>
 
-            {/* AVALIAÇÃO (estrelinhas) */}
-            {typeof product.rating === "number" && (
+            {/* Avaliação */}
+            {typeof product?.rating === "number" && (
               <Stack
                 direction="row"
                 alignItems="center"
                 spacing={1}
                 sx={{ mt: 0.5 }}
               >
-                <Rating value={product.rating} precision={0.5} readOnly />
+                <Rating value={product?.rating} precision={0.5} readOnly />
                 <Typography variant="body2" color="text.secondary">
-                  {product.rating.toFixed(1)}
-                  {product.ratingsCount ? ` (${product.ratingsCount})` : ""}
+                  {product?.rating?.toFixed(1)}
+                  {product?.ratingsCount ? ` (${product.ratingsCount})` : ""}
                 </Typography>
               </Stack>
             )}
 
             <Typography variant="subtitle1" color="text.secondary">
-              {product.category}
+              {product?.category}
             </Typography>
 
-            {/* TAGS */}
-            {!!product.tags?.length && (
+            {!!product?.tags?.length && (
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                {product.tags.map((t) => (
+                {product?.tags.map((t) => (
                   <Chip key={t} size="small" label={t} variant="outlined" />
                 ))}
               </Stack>
@@ -259,10 +180,10 @@ export default function ProductDetailsPage() {
             <Divider />
 
             <Typography variant="h5" color="primary" fontWeight={700}>
-              {formatBRL(product.price)}
+              {formatBRL(product?.price ?? 0)}
             </Typography>
             <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-              {product.description}
+              {product?.description}
             </Typography>
 
             {/* Pagamento */}
@@ -298,29 +219,35 @@ export default function ProductDetailsPage() {
                 <TextField
                   label="CEP"
                   placeholder="00000-000"
-                  value={cep}
-                  onChange={(e) => setCep(e.target.value)}
+                  value={state.cep}
+                  onChange={(e) => updateCep(e.target.value)}
                   inputProps={{ inputMode: "numeric", maxLength: 9 }}
                   sx={{ flex: 1 }}
                 />
                 <Button
-                  onClick={handleCalcFrete}
+                  onClick={calcFreight}
                   variant="outlined"
-                  disabled={freteLoading}
+                  disabled={state.freteLoading}
                 >
-                  {freteLoading ? <CircularProgress size={20} /> : "Calcular"}
+                  {state.freteLoading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    "Calcular"
+                  )}
                 </Button>
               </Stack>
 
               <FormLabel id="shipping-label">Opções de entrega</FormLabel>
               <RadioGroup
                 aria-labelledby="shipping-label"
-                value={shipping}
-                onChange={(e) => setShipping(e.target.value)}
+                value={state.shipping}
+                onChange={(e) =>
+                  selectShipping(e.target.value as ShippingMethodId)
+                }
               >
                 <Stack spacing={1}>
                   {shippingOptions.map((opt) => {
-                    const calc = fretes[opt.id];
+                    const calc = state.fretes[opt.id as ShippingMethodId];
                     const price =
                       calc?.price ?? (opt.id === "pickup" ? 0 : undefined);
                     const eta =
@@ -382,8 +309,8 @@ export default function ProductDetailsPage() {
                 size="large"
                 disabled={isOutOfStock}
                 onClick={() => {
-                  // TODO: integrar com carrinho (context/Redux/zustand)
-                  // addToCart(product.id, 1, { shipping, cep, freight: fretes[shipping] })
+                  // TODO: integrar com CartContext/Service
+                  // addToCart(product!.id, 1, { shipping: state.shipping, cep: state.cep, freight: state.fretes[state.shipping] })
                 }}
               >
                 Adicionar ao carrinho
@@ -401,8 +328,8 @@ export default function ProductDetailsPage() {
         </Grid>
       </Grid>
 
-      {/* --------- RELACIONADOS --------- */}
-      {related.length > 0 && (
+      {/* Relacionados */}
+      {!!related.length && (
         <Box sx={{ mt: 6 }}>
           <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
             Produtos relacionados
@@ -410,7 +337,6 @@ export default function ProductDetailsPage() {
           <Grid container spacing={2}>
             {related.map((p) => (
               <Grid key={p.id} sx={{ xs: 12, sm: 6, md: 3 }}>
-                {/* Se já existe ProductCard no projeto, reutiliza: */}
                 <ProductCard product={p} />
               </Grid>
             ))}
@@ -418,5 +344,13 @@ export default function ProductDetailsPage() {
         </Box>
       )}
     </Box>
+  );
+}
+
+export default function ProductDetailsPage() {
+  return (
+    <ProductDetailsProvider>
+      <ProductDetailsView />
+    </ProductDetailsProvider>
   );
 }

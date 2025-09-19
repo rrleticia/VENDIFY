@@ -1,1 +1,2 @@
-export * as AuthService from "./AuthService";
+export * from "./api";
+export * from "./func";

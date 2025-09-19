@@ -21,7 +21,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { ruleLenOk, ruleNoSeqOk } from "@common/util";
-import { type IRegisterInterface } from "@app/services/AuthService";
+import { type IRegisterInterface } from "@app/services/api/AuthService";
 import { useAuthContext } from "@common/contexts/AuthContext";
 
 export default function RegisterPage() {
