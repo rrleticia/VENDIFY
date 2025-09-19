@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { joiPasswordExtendCore } from "joi-password";
-import phoneBR from "@common/util/phone.validator";
+import phoneBR from "@common/validators/phone.validator";
 
 const joiPassword = Joi.extend(joiPasswordExtendCore);
 
@@ -16,7 +16,11 @@ export const RegisterSchema = Joi.object().keys({
     .required(),
 
   // ✅ Sem joi-phone-number; usando nosso validador custom
-  phone: phoneBR({ format: "international", requireAreaCode: true }),
+  phone: phoneBR({
+    format: "international",
+    requireAreaCode: true,
+    optional: true,
+  }),
 
   password: joiPassword
     .string()
@@ -33,4 +37,6 @@ export const RegisterSchema = Joi.object().keys({
     .trim()
     .uppercase()
     .valid("USER", "user", "VENDOR", "vendor", "EDITOR", "editor"),
+
+  acceptUpdates: Joi.boolean().required(),
 });

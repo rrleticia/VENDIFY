@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 
 interface IInputBoxProps {
@@ -8,6 +7,7 @@ interface IInputBoxProps {
   value: string;
   error: boolean;
   helperText: string;
+  defaultValue?: string;
   handleChange: (event: any) => void;
   required?: boolean;
   disabled?: boolean;
@@ -22,6 +22,7 @@ export const InputBox: React.FC<IInputBoxProps> = ({
   value,
   error,
   helperText,
+  defaultValue,
   required,
   disabled,
   handleChange,
@@ -44,6 +45,7 @@ export const InputBox: React.FC<IInputBoxProps> = ({
       value={value}
       error={error}
       helperText={helperText}
+      defaultValue={defaultValue}
       required={required ?? false}
       disabled={disabled ?? false}
       onChange={handleChange}

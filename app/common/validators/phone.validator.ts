@@ -7,6 +7,7 @@ interface PhoneOptions {
   format?: PhoneFormat; // default: "international"
   requireAreaCode?: boolean; // default: true
   mobileOnly?: boolean; // default: false (aceita fixo e móvel)
+  optional?: boolean; // default: false (true => não valida se vazio)
 }
 
 export default function phoneBR(options: PhoneOptions = {}) {
@@ -14,10 +15,23 @@ export default function phoneBR(options: PhoneOptions = {}) {
     format = "international",
     requireAreaCode = true,
     mobileOnly = false,
+    optional = false,
   } = options;
 
-  return Joi.string()
+  // base do schema pode permitir vazio/ausente se optional = true
+  let schema = Joi.string();
+  if (optional) {
+    // permite "", null e ausência do campo
+    schema = schema.allow("", null).optional();
+  }
+
+  return schema
     .custom((value, helpers) => {
+      // Se opcional e vazio/ausente, não valida (passa direto)
+      if (optional && (value === "" || value == null)) {
+        return value;
+      }
+
       if (typeof value !== "string") return helpers.error("string.base");
 
       // Remove tudo que não é dígito

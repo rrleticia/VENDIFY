@@ -7,6 +7,7 @@ export interface IRegisterHookJson {
   email: string;
   phone: string;
   password: string;
+  acceptUpdates: boolean;
 }
 
 export const useRegisterForm = (): FormHookType => {
@@ -15,13 +16,20 @@ export const useRegisterForm = (): FormHookType => {
   const [formData, setFormData] = useState<IRegisterHookJson>({
     name: "",
     email: "",
-    phone: "+55",
+    phone: "",
     password: "",
+    acceptUpdates: false,
   });
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof IRegisterHookJson, string>>
-  >({ name: "", email: "", password: "" });
+  >({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    acceptUpdates: "",
+  });
 
   // Handle input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,17 +47,34 @@ export const useRegisterForm = (): FormHookType => {
     });
   };
 
+  const handleCheckedInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name } = event.target;
+    setFormData({
+      ...formData,
+      [name]: event.target.checked,
+    });
+
+    // Clear the error for the field being updated
+    setErrors({
+      ...errors,
+      [name]: "",
+    });
+  };
+
+  // Validate form data and set errors if any
   // Validate form data and set errors if any
   const verifyErrors = () => {
     const { error } = Validators["RegisterSchema"].validate(formData, {
       abortEarly: false, // Collect all errors
     });
-    console.log(error);
 
     if (error) {
+      console.log(error);
       const newErrors: Partial<Record<keyof IRegisterHookJson, string>> = {};
       error.details.forEach((detail: any) => {
-        const field = detail.path[0] as keyof IRegisterHookJson; // Explicitly type the field as keyof IOwnerJson
+        const field = detail.path[0] as keyof IRegisterHookJson; // Explicitly type the field as keyof IAppointmentJson
         newErrors[field] = detail.message; // Assign error message to corresponding field
       });
       setErrors(newErrors); // Set all form errors
@@ -67,8 +92,9 @@ export const useRegisterForm = (): FormHookType => {
     setFormData({
       name: "",
       email: "",
-      phone: "+55",
+      phone: "",
       password: "",
+      acceptUpdates: false,
     });
     setErrors({});
   };
@@ -81,5 +107,6 @@ export const useRegisterForm = (): FormHookType => {
     handleErrorChange: setErrors,
     verifyErrors,
     resetForm,
+    handleCheckedInputChange,
   };
 };

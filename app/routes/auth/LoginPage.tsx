@@ -1,15 +1,9 @@
+import { useAuthContext } from "@common/contexts/AuthContext";
 import { useLoginForm } from "@common/hooks";
 import { InputBox } from "@components/InputBox/InputBox";
 import { InputBoxAdorned } from "@components/InputBox/InputBoxAdorned";
-import {
-  Typography,
-  Stack,
-  Button,
-  Paper,
-  Container,
-  Box,
-} from "@mui/material";
-import { useState } from "react";
+import { Typography, Stack, Button, Paper } from "@mui/material";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 
 export default function LoginPage() {
@@ -23,24 +17,33 @@ export default function LoginPage() {
     verifyErrors,
   } = useLoginForm();
 
+  const { login } = useAuthContext();
+
   const [loading, setLoading] = useState<boolean>(false);
 
-  const onSubmit = async (event: React.FormEvent) => {
-    setLoading(true);
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setLoading(true);
+
+    // Verifica erros de preenchimento antes de fazer login
     if (verifyErrors()) {
-      //   const result = await login(formData.email, formData.password);
-      //   if (result) navigate("/home");
-      navigate("/home");
-    } else {
-      if (handleErrorChange) {
-        handleErrorChange({
-          email: "The e-mail or password are incorrect.",
-          password: "The e-mail or password are incorrect.",
-        });
+      try {
+        await login(formData.email, formData.password);
+        navigate("/home");
+      } catch (err) {
+        // Exibe erro no formulário (por ex., email e senha errados)
+        if (handleErrorChange) {
+          handleErrorChange({
+            email: "O e-mail ou a senha estão incorretos.",
+            password: "O e-mail ou a senha estão incorretos.",
+          });
+        }
+      } finally {
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

@@ -159,7 +159,7 @@ export default function ProfilePage() {
 
   // notifications
   const ordersCount = 12; // mock
-  const points = 380; // mock de pontos/fidelidade
+  const points = 380; // mock
   const coupons = 2; // mock
 
   // feedback
@@ -238,7 +238,6 @@ export default function ProfilePage() {
       const next = exists
         ? prev.map((a) => (a.id === editingAddress.id ? editingAddress : a))
         : [...prev, editingAddress];
-      // se marcou como padrão, desmarca os outros
       if (editingAddress.isDefault) {
         next.forEach((a) => (a.isDefault = a.id === editingAddress.id));
       }
@@ -321,7 +320,6 @@ export default function ProfilePage() {
 
   // handlers - danger zone
   const deleteAccount = () => {
-    // mock
     setSnack({
       open: true,
       msg: "Conta excluída (mock).",
@@ -330,7 +328,8 @@ export default function ProfilePage() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    // >>> Ajuste principal: ocupar toda a largura do layout, sem "max-content"
+    <Container maxWidth="lg" sx={{ py: 3, width: 1 }}>
       {/* Header */}
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}>
         <Stack
@@ -394,9 +393,19 @@ export default function ProfilePage() {
         </Stack>
       </Paper>
 
-      <Grid container spacing={2}>
+      {/* >>> Grid principal: duas colunas flex, ocupando igualmente no md+ */}
+      <Grid spacing={2}>
         {/* Coluna esquerda: Perfil, Endereços, Cartões */}
-        <Grid sx={{ xs: 12, md: 6 }}>
+        <Grid
+          sx={{
+            xs: 12,
+            md: 6,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            "& > *": { width: 1 },
+          }}
+        >
           {/* Dados Pessoais */}
           <Section title="Dados pessoais" icon={<EditRoundedIcon />}>
             <Grid container spacing={2}>
@@ -596,7 +605,16 @@ export default function ProfilePage() {
         </Grid>
 
         {/* Coluna direita: Segurança, Notificações, Danger */}
-        <Grid sx={{ xs: 12, md: 6 }}>
+        <Grid
+          sx={{
+            xs: 12,
+            md: 6,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            "& > *": { width: 1 },
+          }}
+        >
           {/* Segurança & Privacidade */}
           <Section
             title="Segurança & privacidade"
@@ -966,7 +984,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}>
+    <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, width: 1 }}>
       <Stack direction="row" alignItems="center" gap={1}>
         {icon}
         <Typography variant="h6" fontWeight={800}>

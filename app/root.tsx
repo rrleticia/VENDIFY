@@ -7,8 +7,9 @@ import {
   ScrollRestoration,
 } from "react-router";
 import type { Route } from "./+types/root";
-import { AppThemeProvider, CssBaseline } from "@common/contexts";
+import { AppThemeProvider, CssBaseline, UserProvider } from "@common/contexts";
 import type { ReactNode } from "react";
+import { AuthProvider } from "@common/contexts/AuthContext";
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -22,8 +23,9 @@ export function Layout({ children }: { children: ReactNode }) {
       <body>
         <AppThemeProvider>
           <CssBaseline />
-
-          {children}
+          <UserProvider>
+            <AuthProvider> {children}</AuthProvider>
+          </UserProvider>
         </AppThemeProvider>
 
         <ScrollRestoration />

@@ -10,12 +10,14 @@ import {
 import { Link, NavLink } from "react-router";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import { useAuthContext } from "@common/contexts/AuthContext";
 
 interface IAppSearchProps {}
 
 function UserButton() {
-  const logged = false;
-  if (logged) {
+  const { isAuthenticated } = useAuthContext();
+
+  if (isAuthenticated) {
     return (
       <Button component={NavLink} to="/profile" color="inherit">
         Perfil
