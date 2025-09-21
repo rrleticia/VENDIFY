@@ -7,9 +7,20 @@ import {
   ScrollRestoration,
 } from "react-router";
 import type { Route } from "./+types/root";
-import { AppThemeProvider, CssBaseline, UserProvider } from "@common/contexts";
+import {
+  AppThemeProvider,
+  CssBaseline,
+  UserProvider,
+} from "@common/contexts/app";
 import type { ReactNode } from "react";
-import { AuthProvider } from "@common/contexts/AuthContext";
+import {
+  AuthProvider,
+  HomeProvider,
+  OrdersProvider,
+  ProductDetailsProvider,
+  ProfileProvider,
+} from "@common/contexts/";
+import { CartProvider } from "@common/contexts/";
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -24,7 +35,17 @@ export function Layout({ children }: { children: ReactNode }) {
         <AppThemeProvider>
           <CssBaseline />
           <UserProvider>
-            <AuthProvider> {children}</AuthProvider>
+            <ProfileProvider>
+              <CartProvider>
+                <AuthProvider>
+                  <OrdersProvider>
+                    <ProductDetailsProvider>
+                      <HomeProvider>{children} </HomeProvider>
+                    </ProductDetailsProvider>
+                  </OrdersProvider>
+                </AuthProvider>
+              </CartProvider>
+            </ProfileProvider>
           </UserProvider>
         </AppThemeProvider>
 

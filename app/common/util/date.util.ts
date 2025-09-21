@@ -13,3 +13,11 @@ export const validateExpireStoredStringDate = (value: string) => {
   // Compare current date with expiration date
   return currentDate <= expirationDate;
 };
+
+export const formatDate = (iso: string) => {
+  return new Date(iso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};

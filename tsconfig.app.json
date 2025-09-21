@@ -26,8 +26,9 @@
     "paths": {
       "@components/*": ["app/components/*"],
       "@common/*": ["app/common/*"],
-      "@app/*": ["app/*"]
+      "@app/*": ["app/*"],
+      "@services/*": ["app/services/*"]
     }
   },
-  "include": ["app"]
+  "include": ["app", "app/common/types/.ts"]
 }

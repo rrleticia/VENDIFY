@@ -1,97 +1,47 @@
-// src/services/CartService.ts
-// Mock com persistência em localStorage. Troque por API real quando quiser.
+// src/services/api/CartService.ts
+import type { OrderItem } from "./types";
 
-export type ShippingMethodId =
-  | "pickup"
-  | "correios"
-  | "carrier"
-  | "pac"
-  | "sedex";
+// linhas cruas do carrinho (id == product.id)
+export type LineMeta = Record<string, any>;
+export type CartLine = { id: string | number; qty: number; meta?: LineMeta };
 
-export interface LineFreight {
-  price: number; // valor do frete daquela linha (se aplicável)
-  eta?: string; // estimativa textual
-}
+// mocks simples de armazenamento local (troque pelo seu fetch/axios)
+const KEY = "__cart_lines__";
 
-export interface LineMeta {
-  shipping?: ShippingMethodId;
-  cep?: string;
-  freight?: LineFreight;
-}
-
-export interface CartLine {
-  id: string; // productId como string
-  qty: number;
-  meta?: LineMeta; // { shipping, cep, freight }
-}
-
-const LS_KEY = "buyly.cart.v1";
-
-function loadRaw(): CartLine[] {
+function read(): CartLine[] {
   try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? (JSON.parse(raw) as CartLine[]) : [];
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
   } catch {
     return [];
   }
 }
-function saveRaw(lines: CartLine[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(lines));
+function write(lines: CartLine[]) {
+  localStorage.setItem(KEY, JSON.stringify(lines));
 }
 
 export async function getCart(): Promise<CartLine[]> {
-  return loadRaw();
+  return read();
 }
-
-export async function addItem(
-  productId: string | number,
-  qty = 1,
-  meta?: LineMeta
-) {
-  const id = String(productId);
-  const lines = loadRaw();
-  const i = lines.findIndex(
-    (l) =>
-      l.id === id && JSON.stringify(l.meta ?? {}) === JSON.stringify(meta ?? {})
-  );
-  if (i >= 0) lines[i].qty = Math.max(1, lines[i].qty + qty);
-  else lines.push({ id, qty: Math.max(1, qty), meta });
-  saveRaw(lines);
-  return lines;
+export async function addItem(id: string | number, qty = 1, meta?: LineMeta) {
+  const lines = read();
+  const idx = lines.findIndex((l) => String(l.id) === String(id));
+  if (idx >= 0) lines[idx].qty += qty;
+  else lines.push({ id, qty, meta });
+  write(lines);
 }
-
 export async function setQty(
-  productId: string | number,
+  id: string | number,
   qty: number,
   meta?: LineMeta
 ) {
-  const id = String(productId);
-  let lines = loadRaw();
-  lines = lines
-    .map((l) =>
-      l.id === id && JSON.stringify(l.meta ?? {}) === JSON.stringify(meta ?? {})
-        ? { ...l, qty: Math.max(0, qty) }
-        : l
-    )
-    .filter((l) => l.qty > 0);
-  saveRaw(lines);
-  return lines;
-}
-
-export async function removeItem(productId: string | number, meta?: LineMeta) {
-  const id = String(productId);
-  const lines = loadRaw().filter(
-    (l) =>
-      !(
-        l.id === id &&
-        JSON.stringify(l.meta ?? {}) === JSON.stringify(meta ?? {})
-      )
+  const lines = read().map((l) =>
+    String(l.id) === String(id) ? { ...l, qty, meta } : l
   );
-  saveRaw(lines);
-  return lines;
+  write(lines);
 }
-
+export async function removeItem(id: string | number) {
+  write(read().filter((l) => String(l.id) !== String(id)));
+}
 export async function clearCart() {
-  saveRaw([]);
-  return [];
+  write([]);
 }

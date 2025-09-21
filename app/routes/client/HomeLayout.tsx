@@ -1,7 +1,6 @@
 import AppFooter from "@components/AppStructure/AppFooter";
 import AppHeader from "@components/AppStructure/AppHeader";
 import { Box } from "@mui/material";
-
 import { Outlet } from "react-router";
 
 export default function HomeLayout() {

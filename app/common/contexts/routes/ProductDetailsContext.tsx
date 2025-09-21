@@ -1,9 +1,10 @@
-// src/contexts/ProductDetailsContext.tsx
 import {
   type ShippingMethodId,
   type FreightQuote,
   type Product,
   type ShippingOption,
+} from "@common/types";
+import {
   getProductById,
   getRelatedProducts,
   calcFreightForOptions,
@@ -84,7 +85,7 @@ const DEFAULT_OPTIONS: ShippingOption[] = [
 
 export function ProductDetailsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {
-    loading: false,
+    loading: true,
     product: null,
     related: [],
     shipping: "pickup" as ShippingMethodId,
@@ -98,15 +99,21 @@ export function ProductDetailsProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_ERROR", payload: undefined });
     try {
       const product = await getProductById(id);
-
-      dispatch({ type: "SET_PRODUCT", payload: product });
+      dispatch({ type: "SET_PRODUCT", payload: product as unknown as Product });
 
       const initialShipping =
-        product?.shippingOptions?.[0]?.id ?? ("pickup" as ShippingMethodId);
+        (product as any)?.shippingOptions?.[0]?.id ??
+        ("pickup" as ShippingMethodId);
       dispatch({ type: "SET_SHIPPING", payload: initialShipping });
 
-      const related = await getRelatedProducts(product?.category, product?.id);
-      dispatch({ type: "SET_RELATED", payload: related });
+      const related = await getRelatedProducts(
+        (product as any)?.category,
+        (product as any)?.id
+      );
+      dispatch({
+        type: "SET_RELATED",
+        payload: related as unknown as Product[],
+      });
     } catch (e: any) {
       dispatch({
         type: "SET_ERROR",
@@ -126,43 +133,36 @@ export function ProductDetailsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const calcFreight = useCallback(async () => {
-    const product = state.product;
-    if (!product) return;
-
-    const clean = state.cep.replace(/\D/g, "");
-    if (clean.length !== 8) {
-      dispatch({ type: "SET_ERROR", payload: "CEP inválido" });
-      return;
-    }
-
+    if (!state.product) return;
     dispatch({ type: "SET_FRETE_LOADING", payload: true });
-    dispatch({ type: "SET_ERROR", payload: undefined });
     try {
-      const options = product.shippingOptions?.length
-        ? product.shippingOptions
-        : DEFAULT_OPTIONS;
-      const quotes = await calcFreightForOptions(clean, options);
-      dispatch({ type: "SET_FRETES", payload: quotes });
-    } catch (e: any) {
-      dispatch({
-        type: "SET_ERROR",
-        payload: e?.message ?? "Erro ao calcular frete",
-      });
+      const options = (
+        state.product.shippingOptions?.length
+          ? state.product.shippingOptions
+          : DEFAULT_OPTIONS
+      ) as ShippingOption[];
+      const quotes = await calcFreightForOptions(options, state.cep);
+      dispatch({ type: "SET_FRETES", payload: quotes as any });
     } finally {
       dispatch({ type: "SET_FRETE_LOADING", payload: false });
     }
   }, [state.product, state.cep]);
 
   const total = useMemo(() => {
-    const price = state.product?.price ?? 0;
-    const freight =
-      state.fretes[state.shipping]?.price ??
-      (state.shipping === "pickup" ? 0 : 0);
-    return price + freight;
-  }, [state.product?.price, state.fretes, state.shipping]);
+    const base = state.product?.price ?? 0;
+    const extra = state.fretes[state.shipping]?.price ?? 0;
+    return base + extra;
+  }, [state.product, state.fretes, state.shipping]);
 
-  const value = useMemo<IProductDetailsContextProps>(
-    () => ({ state, loadById, updateCep, selectShipping, calcFreight, total }),
+  const value: IProductDetailsContextProps = useMemo(
+    () => ({
+      state,
+      loadById,
+      updateCep,
+      selectShipping,
+      calcFreight,
+      total,
+    }),
     [state, loadById, updateCep, selectShipping, calcFreight, total]
   );
 

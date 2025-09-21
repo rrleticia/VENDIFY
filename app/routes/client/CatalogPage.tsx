@@ -20,9 +20,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useMemo, useState } from "react";
 import ProductCard from "../../components/Pages/ProductCard";
-import { categories, products } from "@common/mocks";
-import type { ProductType } from "@common/types/ProductType";
+import { categories, products } from "@common/mocks/mocks";
 import { useSearchParams } from "react-router";
+import { useCart } from "@common/contexts/"; // <<< integração
+import type { Product } from "@common/types";
 
 type SortKey = "relevance" | "price_asc" | "price_desc";
 
@@ -39,14 +40,14 @@ function normalize(s: string) {
     .toLowerCase();
 }
 
-function matchesQuery(p: ProductType, q: string) {
+function matchesQuery(p: Product, q: string) {
   if (!q) return true;
   const nq = normalize(q);
   const fields = [
     p.name,
     p.category,
     (p as any).brand,
-    (p.tags ?? []).join(" "), // <-- adicione
+    (p.tags ?? []).join(" "),
   ].filter(Boolean) as string[];
   return fields.some((f) => normalize(f).includes(nq));
 }
@@ -88,12 +89,19 @@ export default function CatalogPage() {
   const [params, setParams] = useSearchParams();
   const q = (params.get("name") ?? "").trim();
   const cParam = params.get("category");
+  const isPromotion = params.get("promotion") === "true";
 
   // Barra de busca: visibilidade + valor local (sem form/submit)
   const [showSearch, setShowSearch] = useState<boolean>(!!q);
   const [searchInput, setSearchInput] = useState<string>(q);
 
-  // URL -> estado (categoria) (sem loop): só muda se o valor realmente diferir
+  // Integração carrinho
+  const { addToCart } = useCart();
+  const handleAdd = (product: Product) => {
+    void addToCart(product.id, 1); // no catálogo não há CEP/método ainda
+  };
+
+  // URL -> estado (categoria)
   useEffect(() => {
     const resolved = resolveCategoryParam(cParam);
     setActive((prev) => (prev === resolved ? prev : resolved));
@@ -102,10 +110,11 @@ export default function CatalogPage() {
   // Sincroniza o texto do input quando ?name muda via chips/botões
   useEffect(() => {
     setSearchInput(q);
-    if (q && !showSearch) setShowSearch(true); // se já houver busca na URL, mostrar a barra
-  }, [q]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (q && !showSearch) setShowSearch(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
-  // helpers seguros para mexer na URL (sem SUBMIT)
+  // helpers: mexer na URL (sem submit)
   const setCategoryParam = (cat: string | null) => {
     const next = new URLSearchParams(params);
     if (!cat) next.delete("category");
@@ -128,23 +137,31 @@ export default function CatalogPage() {
   };
 
   // 1) filtro por busca
-  const filteredByQuery = useMemo(
-    () => products.filter((p) => matchesQuery(p, q)),
-    [q]
-  );
+  const filteredByQuery = useMemo(() => {
+    return products.filter((p) => {
+      const match = matchesQuery(p as Product, q);
+      const promoMatch = !isPromotion || (p as Product).isPromo === true;
+      return match && promoMatch;
+    });
+  }, [q, isPromotion]);
 
   // 2) contadores por categoria baseados na busca
   const countsByCategory = useMemo(() => {
     const map = new Map<string, number>();
     for (const p of filteredByQuery) {
-      map.set(p.category, (map.get(p.category) ?? 0) + 1);
+      map.set(
+        (p as Product).category,
+        (map.get((p as Product).category) ?? 0) + 1
+      );
     }
     return map;
   }, [filteredByQuery]);
 
   // 3) aplica categoria + sort
   const filtered = useMemo(() => {
-    let arr = filteredByQuery.filter((p) => !active || p.category === active);
+    let arr = filteredByQuery.filter(
+      (p) => !active || (p as Product).category === active
+    ) as Product[];
     if (sort === "price_asc") arr = [...arr].sort((a, b) => a.price - b.price);
     if (sort === "price_desc") arr = [...arr].sort((a, b) => b.price - a.price);
     return arr;
@@ -188,7 +205,6 @@ export default function CatalogPage() {
             <Chip
               label={`Buscando por “${q}”`}
               onDelete={(e) => {
-                // impedir submit de eventuais forms acima
                 e.preventDefault();
                 setSearchInput("");
                 clearOnlyQuery();
@@ -235,7 +251,7 @@ export default function CatalogPage() {
                   selected
                     ? (e) => {
                         e.preventDefault();
-                        setCategoryParam(null); // sincroniza URL + estado
+                        setCategoryParam(null);
                       }
                     : undefined
                 }
@@ -246,6 +262,35 @@ export default function CatalogPage() {
               />
             );
           })}
+
+          <Chip
+            component="button"
+            type="button"
+            label="Promoções"
+            color={isPromotion ? "primary" : "error"}
+            variant={isPromotion ? "filled" : "outlined"}
+            onClick={(e) => {
+              e.preventDefault();
+              const next = new URLSearchParams(params);
+              if (isPromotion) next.delete("promotion");
+              else next.set("promotion", "true");
+              setParams(next, { replace: true });
+            }}
+            onDelete={
+              isPromotion
+                ? (e) => {
+                    e.preventDefault();
+                    const next = new URLSearchParams(params);
+                    next.delete("promotion");
+                    setParams(next, { replace: true });
+                  }
+                : undefined
+            }
+            deleteIcon={isPromotion ? <CloseIcon /> : undefined}
+            clickable
+            size="small"
+            sx={{ mr: 0.5 }}
+          />
 
           <Box sx={{ flex: 1 }} />
 
@@ -265,7 +310,6 @@ export default function CatalogPage() {
             </Typography>
 
             <Stack direction="row" alignItems="center" spacing={1}>
-              {/* Botão para abrir/fechar barra de busca */}
               <IconButton
                 type="button"
                 aria-label={showSearch ? "Fechar busca" : "Abrir busca"}
@@ -281,7 +325,7 @@ export default function CatalogPage() {
             </Stack>
           </Stack>
 
-          {/* Barra de busca (aparece/ some via botão) */}
+          {/* Barra de busca */}
           {showSearch && (
             <Box sx={{ fontSize: 10 }}>
               <Stack direction="row" spacing={1}>
@@ -336,9 +380,13 @@ export default function CatalogPage() {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {filtered.map((product: ProductType) => (
+          {filtered.map((product: Product) => (
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <ProductCard product={product} tagsVariant="below" />
+              <ProductCard
+                product={product}
+                // seu card já exibe tags abaixo por padrão; se tiver prop, mantenha
+                onAddToCart={() => handleAdd(product)} // <<< integração
+              />
             </Grid>
           ))}
         </Grid>

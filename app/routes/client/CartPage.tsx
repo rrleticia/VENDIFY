@@ -1,9 +1,5 @@
-// CartPage.tsx — versão refatorada (sem cupom no carrinho)
-// - Remove toda a lógica e UI de cupom
-// - Mantém apenas edição de itens + frete estimado + total
-// - Checkout continuará sendo o único lugar onde se aplica cupom/forma de entrega/pagamento
-
-import { useMemo, useState } from "react";
+// src/routes/CartPage.tsx
+import { useMemo, useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -20,102 +16,44 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import DeleteSweepRoundedIcon from "@mui/icons-material/DeleteSweepRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router";
+import { useCart } from "@common/contexts";
+import { formatBRL } from "@common/util";
 
-// ---------- Mock ----------
-type Product = {
-  id: number;
-  name: string;
-  image: string;
-  price: number; // preço unitário
-  stock: number; // mock de estoque
-};
-
-type CartItem = {
-  product: Product;
-  qty: number;
-};
-
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: 1,
-    name: "Fone Bluetooth XY-300",
-    image:
-      "https://images.unsplash.com/photo-1518449955429-6f0de8b9aa16?q=80&w=1200&auto=format&fit=crop",
-    price: 149.9,
-    stock: 8,
-  },
-  {
-    id: 2,
-    name: "Teclado Mecânico Aurora",
-    image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
-    price: 299.0,
-    stock: 5,
-  },
-  {
-    id: 3,
-    name: "Mouse Gamer Helios",
-    image:
-      "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=1200&auto=format&fit=crop",
-    price: 189.5,
-    stock: 12,
-  },
-];
-
-const INITIAL_CART: CartItem[] = [
-  { product: MOCK_PRODUCTS[0], qty: 1 },
-  { product: MOCK_PRODUCTS[1], qty: 2 },
-];
-
-// ---------- Utils ----------
-function formatBRL(v: number) {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-// frete mock: grátis acima de R$400; senão R$29,90
 function calcShipping(subtotal: number) {
   return subtotal >= 400 ? 0 : 29.9;
 }
 
-// ---------- Component ----------
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>(INITIAL_CART);
+  const { state, subtotal, setQty, remove, clear, itemsCount } = useCart();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [reorderId, setReorderId] = useState<string | null>(null);
 
-  const subtotal = useMemo(
-    () => items.reduce((acc, it) => acc + it.product.price * it.qty, 0),
-    [items]
-  );
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get("reorder");
+    if (id) {
+      setReorderId(id);
+      params.delete("reorder");
+      navigate(
+        { pathname: location.pathname, search: params.toString() },
+        { replace: true }
+      );
+    }
+  }, [location.pathname, location.search, navigate]);
 
   const shipping = useMemo(() => calcShipping(subtotal), [subtotal]);
   const total = Math.max(0, subtotal) + shipping;
 
-  const inc = (id: number) =>
-    setItems((prev) =>
-      prev.map((it) =>
-        it.product.id === id
-          ? { ...it, qty: Math.min(it.qty + 1, it.product.stock) }
-          : it
-      )
-    );
-
-  const dec = (id: number) =>
-    setItems((prev) =>
-      prev
-        .map((it) =>
-          it.product.id === id ? { ...it, qty: Math.max(0, it.qty - 1) } : it
-        )
-        .filter((it) => it.qty > 0)
-    );
-
-  const remove = (id: number) =>
-    setItems((prev) => prev.filter((it) => it.product.id !== id));
-
-  const clear = () => setItems([]);
-
-  if (!items.length) {
+  if (!state.items.length) {
     return (
       <Paper variant="outlined" sx={{ p: 3 }}>
+        {reorderId && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Recompra do pedido {reorderId} solicitada.
+          </Alert>
+        )}
         <Typography variant="h6" gutterBottom>
           Seu carrinho está vazio
         </Typography>
@@ -139,7 +77,12 @@ export default function CartPage() {
 
   return (
     <Stack gap={2} sx={{ width: "100%", maxWidth: 1000, mx: "auto" }}>
-      {/* Header */}
+      {reorderId && (
+        <Alert severity="success">
+          Itens do pedido <b>{reorderId}</b> foram adicionados ao seu carrinho.
+        </Alert>
+      )}
+
       <Stack
         direction={{ xs: "column", sm: "row" }}
         alignItems={{ xs: "flex-start", sm: "center" }}
@@ -147,7 +90,7 @@ export default function CartPage() {
         gap={1}
       >
         <Typography variant="h5" fontWeight={700}>
-          Carrinho ({items.reduce((a, b) => a + b.qty, 0)} itens)
+          Carrinho ({itemsCount} itens)
         </Typography>
         <Stack direction="row" gap={1}>
           <Button
@@ -160,7 +103,7 @@ export default function CartPage() {
           <Button
             color="error"
             startIcon={<DeleteSweepRoundedIcon />}
-            onClick={clear}
+            onClick={() => void clear()}
           >
             Limpar carrinho
           </Button>
@@ -168,13 +111,9 @@ export default function CartPage() {
       </Stack>
 
       <Stack direction={{ xs: "column", md: "row" }} gap={2}>
-        {/* Lista de itens */}
-        <Paper
-          variant="outlined"
-          sx={{ padding: 2, flex: 1, height: "min-content" }}
-        >
-          {items.map((it, idx) => (
-            <Box key={it.product.id}>
+        <Paper variant="outlined" sx={{ p: 2, flex: 1, height: "min-content" }}>
+          {state.items.map((it, idx) => (
+            <Box key={`${it.product.id}-${idx}`}>
               {idx > 0 && <Divider sx={{ my: 2 }} />}
               <Box display="flex" alignItems="center" gap={2}>
                 <Box
@@ -197,11 +136,10 @@ export default function CartPage() {
                     Unidade: {formatBRL(it.product.price)}
                   </Typography>
                   <Typography color="text.secondary" fontSize={12}>
-                    Em estoque: {it.product.stock}
+                    Em estoque: {it.product.stock ?? "—"}
                   </Typography>
                 </Box>
 
-                {/* Quantidade */}
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -216,7 +154,13 @@ export default function CartPage() {
                 >
                   <IconButton
                     size="small"
-                    onClick={() => dec(it.product.id)}
+                    onClick={() =>
+                      void setQty(
+                        it.product.id,
+                        Math.max(1, it.qty - 1),
+                        it.meta
+                      )
+                    }
                     disabled={it.qty <= 1}
                   >
                     <RemoveIcon fontSize="small" />
@@ -226,22 +170,26 @@ export default function CartPage() {
                   </Typography>
                   <IconButton
                     size="small"
-                    onClick={() => inc(it.product.id)}
-                    disabled={it.qty >= it.product.stock}
+                    onClick={() =>
+                      void setQty(it.product.id, it.qty + 1, it.meta)
+                    }
+                    disabled={
+                      it.product.stock !== undefined &&
+                      it.qty >= it.product.stock!
+                    }
                   >
                     <AddIcon fontSize="small" />
                   </IconButton>
                 </Stack>
 
-                {/* Preço total do item */}
                 <Box textAlign="right" minWidth={120}>
                   <Typography fontWeight={700}>
-                    {formatBRL(it.product.price * it.qty)}
+                    {formatBRL(it.lineTotal)}
                   </Typography>
                   <Button
                     size="small"
                     color="error"
-                    onClick={() => remove(it.product.id)}
+                    onClick={() => void remove(it.product.id, it.meta)}
                     startIcon={<DeleteIcon />}
                     sx={{ mt: 0.5 }}
                   >
@@ -253,7 +201,6 @@ export default function CartPage() {
           ))}
         </Paper>
 
-        {/* Resumo (sem cupom) */}
         <Stack
           sx={{
             minWidth: { md: 340 },
@@ -265,12 +212,10 @@ export default function CartPage() {
             <Typography variant="h6" fontWeight={700} gutterBottom>
               Resumo
             </Typography>
-
             <Stack direction="row" justifyContent="space-between" py={0.5}>
               <Typography color="text.secondary">Subtotal</Typography>
               <Typography>{formatBRL(subtotal)}</Typography>
             </Stack>
-
             <Stack direction="row" justifyContent="space-between" py={0.5}>
               <Stack direction="row" alignItems="center" gap={0.5}>
                 <LocalShippingRoundedIcon fontSize="small" />
@@ -280,9 +225,7 @@ export default function CartPage() {
                 {shipping === 0 ? "Grátis" : formatBRL(shipping)}
               </Typography>
             </Stack>
-
             <Divider sx={{ my: 1.5 }} />
-
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -291,7 +234,6 @@ export default function CartPage() {
               <Typography variant="h6">Total</Typography>
               <Typography variant="h6">{formatBRL(total)}</Typography>
             </Stack>
-
             <Button
               component={RouterLink}
               to="/checkout"
@@ -302,7 +244,6 @@ export default function CartPage() {
             >
               Finalizar compra
             </Button>
-
             {subtotal < 400 && (
               <Alert severity="info" sx={{ mt: 2 }}>
                 Falta {formatBRL(400 - subtotal)} para frete grátis.

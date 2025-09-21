@@ -1,4 +1,3 @@
-// src/contexts/CartContext.tsx
 import React, {
   createContext,
   useCallback,
@@ -16,7 +15,7 @@ import {
   setQty as svcSetQty,
   removeItem as svcRemove,
   clearCart as svcClear,
-} from "../services/CartService";
+} from "../../../services/api/CartService";
 
 type ProductLite = {
   id: string;
@@ -31,7 +30,7 @@ export type CartResolvedItem = {
   product: ProductLite;
   qty: number;
   meta?: LineMeta;
-  lineTotal: number; // price * qty
+  lineTotal: number;
 };
 
 interface CartState {
@@ -43,6 +42,7 @@ interface CartCtx {
   state: CartState;
   addToCart: (
     productId: string | number,
+    stock: number,
     qty?: number,
     meta?: LineMeta
   ) => Promise<void>;
@@ -68,7 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const resolved: CartResolvedItem[] = raw
       .map((l: CartLine) => {
         const p = products.find((pp) => String(pp.id) === String(l.id));
-        if (!p) return null;
+        if (!p) return null; // se não achar no catálogo, não exibe
         const product: ProductLite = {
           id: String(p.id),
           name: p.name,
@@ -93,8 +93,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [hydrate]);
 
   const addToCart = useCallback(
-    async (productId: string | number, qty = 1, meta?: LineMeta) => {
-      await svcAdd(productId, qty, meta);
+    async (
+      productId: string | number,
+      stock: number,
+      qty = 1,
+      meta?: LineMeta
+    ) => {
+      if (qty <= stock) await svcAdd(productId, qty, meta);
       await hydrate();
     },
     [hydrate]
@@ -130,15 +135,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [state.items]
   );
 
-  const value: CartCtx = {
-    state,
-    addToCart,
-    setQty,
-    remove,
-    clear,
-    subtotal,
-    itemsCount,
-  };
+  const value: CartCtx = useMemo(
+    () => ({
+      state,
+      addToCart,
+      setQty,
+      remove,
+      clear,
+      subtotal,
+      itemsCount,
+    }),
+    [state, addToCart, setQty, remove, clear, subtotal, itemsCount]
+  );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

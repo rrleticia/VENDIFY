@@ -34,42 +34,7 @@ import SecurityRoundedIcon from "@mui/icons-material/SecurityRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import { Link as RouterLink } from "react-router";
-
-// ---------------- Mock & Utils ----------------
-type Address = {
-  id: string;
-  label: string; // "Casa", "Trabalho", etc.
-  line1: string;
-  line2?: string;
-  city: string;
-  state: string;
-  zip: string;
-  isDefault?: boolean;
-};
-
-type Card = {
-  id: string;
-  brand: "Visa" | "Mastercard" | "Elo" | "Amex";
-  last4: string;
-  holder: string;
-  expMonth: number;
-  expYear: number;
-  isDefault?: boolean;
-};
-
-type User = {
-  name: string;
-  email: string;
-  phone?: string;
-  cpf?: string;
-  birth?: string; // yyyy-mm-dd
-  avatar?: string;
-  newsletter?: boolean;
-  twoFA?: boolean;
-  marketingPush?: boolean;
-  marketingEmail?: boolean;
-  marketingSMS?: boolean;
-};
+import type { Address, Card, User } from "@common/types";
 
 const MOCK_USER: User = {
   name: "Letícia Andrade",
@@ -172,16 +137,6 @@ export default function ProfilePage() {
     msg: "",
     severity: "success",
   });
-
-  // derived
-  const defaultAddressId = useMemo(
-    () => addresses.find((a) => a.isDefault)?.id,
-    [addresses]
-  );
-  const defaultCardId = useMemo(
-    () => cards.find((c) => c.isDefault)?.id,
-    [cards]
-  );
 
   // handlers - user
   const onSaveUser = () => {

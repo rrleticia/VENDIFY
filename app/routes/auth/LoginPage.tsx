@@ -1,4 +1,4 @@
-import { useAuthContext } from "@common/contexts/AuthContext";
+import { useAuthContext } from "@common/contexts/";
 import { useLoginForm } from "@common/hooks";
 import { InputBox } from "@components/InputBox/InputBox";
 import { InputBoxAdorned } from "@components/InputBox/InputBoxAdorned";

@@ -1,3 +1,5 @@
+// ProductCard.tsx
+import type { Product } from "@app/services/api/ProductService";
 import {
   Card,
   CardContent,
@@ -9,11 +11,13 @@ import {
   Stack,
 } from "@mui/material";
 import { Link } from "react-router";
-import type { ProductType } from "@common/types/ProductType";
 
-export default function ProductCard({ product }: { product: any }) {
-  const addItem = (product: any) => {};
+type Props = {
+  product: Product;
+  onAddToCart?: (p: Product) => void; // <<< novo
+};
 
+export default function ProductCard({ product, onAddToCart }: Props) {
   return (
     <Card
       sx={{
@@ -60,7 +64,6 @@ export default function ProductCard({ product }: { product: any }) {
           })}
         </Typography>
 
-        {/* TAGS — sempre abaixo do preço */}
         {!!product.tags?.length && (
           <Stack
             direction="row"
@@ -69,7 +72,7 @@ export default function ProductCard({ product }: { product: any }) {
             flexWrap="wrap"
             sx={{ mt: 1 }}
           >
-            {product.tags.map((t: any) => (
+            {product.tags.map((t) => (
               <Chip key={t} size="small" label={t} variant="outlined" />
             ))}
           </Stack>
@@ -99,7 +102,7 @@ export default function ProductCard({ product }: { product: any }) {
           Detalhes
         </Button>
         <Button
-          onClick={() => addItem(product)}
+          onClick={() => onAddToCart?.(product)}
           variant="contained"
           size="medium"
           fullWidth

@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+// src/routes/HomePage.tsx
+import { useMemo, useState } from "react";
 import {
   Box,
   Container,
@@ -15,6 +16,10 @@ import {
   Rating,
   TextField,
   Divider,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
 } from "@mui/material";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import PixRoundedIcon from "@mui/icons-material/PixRounded";
@@ -22,67 +27,13 @@ import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { Link as RouterLink } from "react-router";
 
-// ---------------- Mock ----------------
-type Product = {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-  rating: number;
-  badge?: "Novo" | "Promo" | "Mais vendido";
-};
-
-const PRODUCTS: Product[] = [
-  {
-    id: 101,
-    name: "Fone Bluetooth XY-300",
-    image:
-      "https://images.unsplash.com/photo-1518449955429-6f0de8b9aa16?q=80&w=1400&auto=format&fit=crop",
-    price: 149.9,
-    rating: 4.5,
-    badge: "Promo",
-  },
-  {
-    id: 102,
-    name: "Teclado Mecânico Aurora",
-    image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1400&auto=format&fit=crop",
-    price: 299.0,
-    rating: 4.8,
-    badge: "Mais vendido",
-  },
-  {
-    id: 103,
-    name: "Mouse Gamer Helios",
-    image:
-      "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=1400&auto=format&fit=crop",
-    price: 189.5,
-    rating: 4.2,
-    badge: "Novo",
-  },
-  {
-    id: 104,
-    name: "Mochila Urbana Pro",
-    image:
-      "https://images.unsplash.com/photo-1544937950-fa07a98d237f?q=80&w=1400&auto=format&fit=crop",
-    price: 219.9,
-    rating: 4.6,
-  },
-];
-
-const CATEGORIES = [
-  { slug: "acessorios", label: "Acessórios" },
-  { slug: "teclados", label: "Teclados" },
-  { slug: "mouses", label: "Mouses" },
-  { slug: "mochilas", label: "Mochilas" },
-  { slug: "escritorio", label: "Escritório" },
-];
-
-function formatBRL(v: number) {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
+// 🔗 integrações com o ecossistema (sem alterar componentes)
+import { useHome } from "@common/contexts"; // expõe state: featured, categories, etc.
+import { formatBRL } from "@common/util"; // helper centralizado
+import type { Product } from "@common/types"; // tipo unificado do catálogo
 
 // ---------------- Small Components ----------------
 function StatBadge({
@@ -129,6 +80,7 @@ function StatBadge({
 }
 
 function ProductCard({ p }: { p: Product }) {
+  const rating = p.rating ?? 0;
   return (
     <Card
       sx={{
@@ -163,7 +115,7 @@ function ProductCard({ p }: { p: Product }) {
           component="img"
           src={p.image}
           alt={p.name}
-          sx={{ height: 210, objectFit: "cover" }}
+          sx={{ height: 210, objectFit: "cover", width: 275 }}
         />
       </Box>
       <CardContent sx={{ flexGrow: 1 }}>
@@ -171,9 +123,9 @@ function ProductCard({ p }: { p: Product }) {
           {p.name}
         </Typography>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
-          <Rating name="read-only" value={p.rating} readOnly size="small" />
+          <Rating name="read-only" value={rating} readOnly size="small" />
           <Typography variant="caption" color="text.secondary">
-            {p.rating.toFixed(1)}
+            {rating.toFixed(1)}
           </Typography>
         </Stack>
         <Typography sx={{ mt: 1.5 }} variant="h6">
@@ -197,7 +149,27 @@ function ProductCard({ p }: { p: Product }) {
 
 // ---------------- Page ----------------
 export default function HomePage() {
-  const featured = useMemo(() => PRODUCTS.slice(0, 4), []);
+  // ✅ pega os dados do contexto (em vez de mocks locais)
+  const { state } = useHome();
+
+  const [openRegras, setOpenRegras] = useState(false);
+
+  // Destaques: mantém a mesma lógica de slice(0, 4)
+  const featured = useMemo(
+    () => (state.featured ?? []).slice(0, 4),
+    [state.featured]
+  );
+
+  // A página original esperava CATEGORIES como { slug, label }
+  // O contexto expõe string[], então derivamos aqui sem alterar o JSX
+  const CATEGORIES = useMemo(
+    () =>
+      (state.categories ?? []).map((label) => ({
+        label,
+        slug: String(label),
+      })),
+    [state.categories]
+  );
 
   return (
     <Box>
@@ -271,7 +243,7 @@ export default function HomePage() {
                     variant="outlined"
                     size="large"
                     component={RouterLink}
-                    to="/promocoes"
+                    to="/catalog?promotion=true"
                   >
                     Promoções
                   </Button>
@@ -341,7 +313,7 @@ export default function HomePage() {
               key={c.slug}
               label={c.label}
               component={RouterLink}
-              to={`/category/${c.slug}`}
+              to={`/catalog?category=${c.slug}`}
               clickable
               sx={{
                 py: 1,
@@ -378,7 +350,7 @@ export default function HomePage() {
         <Grid container spacing={2}>
           {featured.map((p) => (
             <Grid key={p.id} sx={{ xs: 12, sm: 6, md: 3 }}>
-              <ProductCard p={p} />
+              <ProductCard p={p as Product} />
             </Grid>
           ))}
         </Grid>
@@ -425,8 +397,7 @@ export default function HomePage() {
                   </Button>
                   <Button
                     variant="outlined"
-                    component={RouterLink}
-                    to="/regras-de-cupom"
+                    onClick={() => setOpenRegras(true)}
                   >
                     Regras
                   </Button>
@@ -436,6 +407,63 @@ export default function HomePage() {
           </Grid>
         </Paper>
       </Container>
+
+      <Dialog
+        open={openRegras}
+        onClose={() => setOpenRegras(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>
+          Regras do Cupom e Funcionalidades
+          <IconButton
+            onClick={() => setOpenRegras(false)}
+            sx={{ position: "absolute", top: 8, right: 8 }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography gutterBottom>
+            O cupom <strong>VEM10</strong> oferece{" "}
+            <strong>10% de desconto</strong> em produtos selecionados da loja.
+          </Typography>
+          <Typography gutterBottom>Para utilizá-lo:</Typography>
+          <ul>
+            <li>Adicione os produtos ao carrinho normalmente.</li>
+            <li>
+              No checkout, insira o cupom <strong>VEM10</strong>.
+            </li>
+            <li>
+              O desconto será aplicado automaticamente nos itens elegíveis.
+            </li>
+          </ul>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            Funcionalidades da Plataforma
+          </Typography>
+          <ul>
+            <li>
+              Suporte a pagamentos via <strong>PIX</strong> e{" "}
+              <strong>Cartões (Visa, MasterCard, Elo)</strong>.
+            </li>
+            <li>
+              Retirada na loja, entrega local ou envio via
+              transportadora/Correios.
+            </li>
+            <li>Checkout rápido e seguro.</li>
+            <li>Área do cliente com histórico de pedidos.</li>
+            <li>
+              Painel de administração simples, mesmo para quem não tem
+              experiência técnica.
+            </li>
+          </ul>
+          <Typography variant="caption" color="text.secondary">
+            * As regras podem ser alteradas sem aviso prévio. Consulte sempre a
+            data de validade da promoção.
+          </Typography>
+        </DialogContent>
+      </Dialog>
 
       {/* COMO FUNCIONA */}
       <Container sx={{ mt: 6 }}>

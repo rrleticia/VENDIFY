@@ -1,4 +1,4 @@
-import { useAppThemeContext } from "@common/contexts";
+import { useAppThemeContext } from "@common/contexts/app";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import Brightness4 from "@mui/icons-material/Brightness4";
 import Brightness7 from "@mui/icons-material/Brightness7";

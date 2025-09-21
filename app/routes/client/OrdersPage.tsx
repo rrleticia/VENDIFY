@@ -28,6 +28,8 @@ import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { Link as RouterLink } from "react-router";
+import { useOrders } from "@common/contexts/"; // <<< integração ao contexto
+import { formatDate, formatBRL } from "@common/util";
 
 // -------- Types (mock) --------
 type OrderStatus =
@@ -78,18 +80,6 @@ type Order = {
   canceledAt?: string;
 };
 
-// -------- Utils --------
-function formatBRL(v: number) {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING: "Aguardando pagamento",
   PAID: "Pagamento aprovado",
@@ -127,107 +117,6 @@ const STEP_INDEX: Record<OrderStatus, number> = {
   CANCELED: 0, // tratamos cancelado à parte
 };
 
-// -------- Mock data --------
-const MOCK_ORDERS: Order[] = [
-  {
-    id: "#2025-0001",
-    createdAt: "2025-09-10T14:22:00Z",
-    status: "DELIVERED",
-    items: [
-      {
-        id: 101,
-        name: "Fone Bluetooth XY-300",
-        image:
-          "https://images.unsplash.com/photo-1518449955429-6f0de8b9aa16?q=80&w=1200&auto=format&fit=crop",
-        price: 149.9,
-        qty: 1,
-      },
-      {
-        id: 102,
-        name: "Teclado Mecânico Aurora",
-        image:
-          "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
-        price: 299.0,
-        qty: 1,
-      },
-    ],
-    address: {
-      name: "Letícia A.",
-      line1: "Rua das Flores, 123",
-      city: "Campina Grande",
-      state: "PB",
-      zip: "58400-000",
-    },
-    payment: { method: "PIX" },
-    shipment: { method: "Correios", tracking: "BR123456789BR" },
-    subtotal: 448.9,
-    shipping: 0,
-    discount: 29.9,
-    total: 419.0,
-  },
-  {
-    id: "#2025-0002",
-    createdAt: "2025-09-12T10:05:00Z",
-    status: "SHIPPED",
-    items: [
-      {
-        id: 103,
-        name: "Mouse Gamer Helios",
-        image:
-          "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=1200&auto=format&fit=crop",
-        price: 189.5,
-        qty: 1,
-      },
-    ],
-    address: {
-      name: "Ronaldd M.",
-      line1: "Av. Principal, 456",
-      line2: "Apto 201",
-      city: "João Pessoa",
-      state: "PB",
-      zip: "58000-000",
-    },
-    payment: { method: "CARD", last4: "8421" },
-    shipment: {
-      method: "Transportadora",
-      tracking: "TRK-987654321",
-      etaDays: 2,
-    },
-    subtotal: 189.5,
-    shipping: 29.9,
-    discount: 0,
-    total: 219.4,
-  },
-  {
-    id: "#2025-0003",
-    createdAt: "2025-09-16T18:40:00Z",
-    status: "PENDING",
-    items: [
-      {
-        id: 104,
-        name: "Mochila Urbana Pro",
-        image:
-          "https://images.unsplash.com/photo-1544937950-fa07a98d237f?q=80&w=1200&auto=format&fit=crop",
-        price: 219.9,
-        qty: 1,
-      },
-    ],
-    address: {
-      name: "Hanani S.",
-      line1: "Rua do Sol, 77",
-      city: "Campina Grande",
-      state: "PB",
-      zip: "58400-111",
-    },
-    payment: { method: "PIX" },
-    shipment: { method: "Retirada" },
-    subtotal: 219.9,
-    shipping: 0,
-    discount: 0,
-    total: 219.9,
-  },
-];
-
 // -------- Small components --------
 function StatusChip({ status }: { status: OrderStatus }) {
   return (
@@ -254,53 +143,49 @@ function ItemsAvatars({ items }: { items: OrderItem[] }) {
 
 // -------- Page --------
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  // Integração ao contexto (sem alterar UI)
+  const { orders, filters, setFilters, cancel, makeReorder } = useOrders();
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Filtros
-  const [search, setSearch] = useState("");
-  const [statusTab, setStatusTab] = useState<OrderStatus | "ALL">("ALL");
-  const [start, setStart] = useState<string>(""); // yyyy-mm-dd
-  const [end, setEnd] = useState<string>(""); // yyyy-mm-dd
-
+  // Mantém o mesmo filtro client-side do arquivo original
   const filtered = useMemo(() => {
     return orders.filter((o) => {
+      const search = filters.text ?? "";
       const matchText =
         !search ||
         o.id.toLowerCase().includes(search.toLowerCase()) ||
         o.items.some((it) =>
           it.name.toLowerCase().includes(search.toLowerCase())
         );
-      const matchStatus = statusTab === "ALL" || o.status === statusTab;
+      const matchStatus =
+        filters.status === "ALL" || o.status === filters.status;
       const time = new Date(o.createdAt).getTime();
-      const after = !start || time >= new Date(`${start}T00:00:00`).getTime();
-      const before = !end || time <= new Date(`${end}T23:59:59`).getTime();
+      const after =
+        !filters.start ||
+        time >= new Date(`${filters.start}T00:00:00`).getTime();
+      const before =
+        !filters.end || time <= new Date(`${filters.end}T23:59:59`).getTime();
       return matchText && matchStatus && after && before;
     });
-  }, [orders, search, statusTab, start, end]);
+  }, [orders, filters]);
 
   const clearFilters = () => {
-    setSearch("");
-    setStatusTab("ALL");
-    setStart("");
-    setEnd("");
+    setFilters({ text: "", status: "ALL", start: "", end: "" });
   };
 
   const canCancel = (status: OrderStatus) =>
     status === "PENDING" || status === "PAID";
-  const onCancel = (id: string) =>
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === id
-          ? { ...o, status: "CANCELED", canceledAt: new Date().toISOString() }
-          : o
-      )
-    );
+
+  const onCancel = (id: string) => {
+    // chama o backend via contexto
+    void cancel(id);
+  };
 
   const onReorder = (o: Order) => {
-    // mock: levar para o carrinho com query ?reorder=...
-    // na sua app real, você recriaria os itens no carrinho.
-    console.log("Recomprar:", o.id);
+    // dispara lógica de recompra via contexto (e mantém o link para /cart como no original)
+    void makeReorder(o.id);
+    // o link de navegação permanece no botão (RouterLink) como antes
   };
 
   return (
@@ -338,8 +223,8 @@ export default function OrdersPage() {
               size="small"
               label="Buscar por código ou produto"
               placeholder="#2025-0001, “teclado”…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={filters.text}
+              onChange={(e) => setFilters({ text: e.target.value })}
               InputProps={{
                 startAdornment: (
                   <SearchRoundedIcon sx={{ mr: 1, color: "text.disabled" }} />
@@ -354,8 +239,8 @@ export default function OrdersPage() {
               type="date"
               label="De"
               InputLabelProps={{ shrink: true }}
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
+              value={filters.start}
+              onChange={(e) => setFilters({ start: e.target.value })}
             />
           </Grid>
           <Grid sx={{ xs: 6, md: 2 }}>
@@ -364,15 +249,15 @@ export default function OrdersPage() {
               size="small"
               type="date"
               label="Até"
-              InputLabelProps={{ shrink: true }}
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              value={filters.end}
+              onChange={(e) => setFilters({ end: e.target.value })}
             />
           </Grid>
           <Grid sx={{ xs: 12, md: 4 }}>
             <Tabs
-              value={statusTab}
-              onChange={(_, v) => setStatusTab(v)}
+              value={filters.status}
+              onChange={(_, v) => setFilters({ status: v })}
               variant="scrollable"
               scrollButtons="auto"
             >
@@ -389,7 +274,10 @@ export default function OrdersPage() {
 
         <Stack direction="row" gap={1} sx={{ mt: 1 }}>
           <Chip label={`${filtered.length} pedido(s)`} />
-          {(search || start || end || statusTab !== "ALL") && (
+          {(filters.text ||
+            filters.start ||
+            filters.end ||
+            filters.status !== "ALL") && (
             <Button onClick={clearFilters}>Limpar filtros</Button>
           )}
         </Stack>

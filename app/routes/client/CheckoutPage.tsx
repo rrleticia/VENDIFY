@@ -1,9 +1,4 @@
-// CheckoutPage.tsx
-// Página que aparece ao clicar em "Finalizar compra" (MUI v6 + React Router 7)
-// - Coluna esquerda: endereço, entrega e pagamento
-// - Coluna direita: resumo do pedido + total
-// - 100% controlada em estado (sem submits acidentais)
-
+// src/routes/CheckoutPage.tsx
 import { useMemo, useState } from "react";
 import {
   Box,
@@ -30,14 +25,7 @@ import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useNavigate } from "react-router";
-import { products } from "@common/mocks";
-
-// --------- mocks simples ---------
-type CartItem = { id: number; qty: number };
-const MOCK_CART: CartItem[] = [
-  { id: 1, qty: 1 },
-  { id: 2, qty: 2 },
-];
+import { useCart } from "../contexts/CartContext";
 
 type ShippingKind = "pickup" | "pac" | "sedex";
 type PaymentKind = "pix" | "card";
@@ -46,9 +34,9 @@ function money(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-// --------- Página ---------
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { state, subtotal, clear } = useCart();
 
   // endereço
   const [name, setName] = useState("Letícia Andrade");
@@ -70,31 +58,9 @@ export default function CheckoutPage() {
     open: boolean;
     msg: string;
     sev: "success" | "info" | "warning" | "error";
-  }>({
-    open: false,
-    msg: "",
-    sev: "success",
-  });
+  }>({ open: false, msg: "", sev: "success" });
 
-  // itens do carrinho com preço
-  const items = useMemo(() => {
-    return MOCK_CART.map((ci) => {
-      const p = products.find((pp) => Number(pp.id) === Number(ci.id));
-      return p ? { ...p, qty: ci.qty, line: p.price * ci.qty } : null;
-    }).filter(Boolean) as Array<{
-      id: number;
-      name: string;
-      price: number;
-      qty: number;
-      line: number;
-      image?: string;
-    }>;
-  }, []);
-
-  const subtotal = useMemo(
-    () => items.reduce((acc, it) => acc + it.line, 0),
-    [items]
-  );
+  const items = state.items;
 
   const shippingCost = useMemo(() => {
     if (shipping === "pickup") return 0;
@@ -104,9 +70,7 @@ export default function CheckoutPage() {
 
   const discount = useMemo(() => {
     if (!appliedCoupon) return 0;
-    // regra mock: CUPOM10 => 10% no subtotal (cap R$50)
     if (appliedCoupon === "CUPOM10") return Math.min(subtotal * 0.1, 50);
-    // FRETEGRATIS => zera frete
     if (appliedCoupon === "FRETEGRATIS") return shippingCost;
     return 0;
   }, [appliedCoupon, subtotal, shippingCost]);
@@ -126,14 +90,12 @@ export default function CheckoutPage() {
     setAppliedCoupon(code);
     setSnack({ open: true, msg: `Cupom ${code} aplicado.`, sev: "success" });
   }
-
   function clearCoupon() {
     setAppliedCoupon(null);
     setCoupon("");
   }
 
-  function confirmOrder() {
-    // validações mínimas
+  async function confirmOrder() {
     if (!name || !zip || !street || !city || !stateUF) {
       setSnack({
         open: true,
@@ -146,7 +108,7 @@ export default function CheckoutPage() {
       setSnack({ open: true, msg: "Carrinho vazio.", sev: "warning" });
       return;
     }
-    // navega para uma página de sucesso (mock)
+    await clear();
     navigate("/checkout/success", {
       replace: true,
       state: { total, payment, shipping, orderId: `#${Date.now()}` },
@@ -179,9 +141,8 @@ export default function CheckoutPage() {
       </Stack>
 
       <Grid container spacing={2}>
-        {/* esquerda */}
         <Grid size={{ xs: 12, md: 7 }}>
-          {/* endereço */}
+          {/* Endereço */}
           <Paper
             variant="outlined"
             sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
@@ -234,7 +195,7 @@ export default function CheckoutPage() {
             </Grid>
           </Paper>
 
-          {/* entrega */}
+          {/* Entrega */}
           <Paper
             variant="outlined"
             sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
@@ -287,7 +248,7 @@ export default function CheckoutPage() {
             </RadioGroup>
           </Paper>
 
-          {/* pagamento */}
+          {/* Pagamento */}
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, width: 1 }}>
             <Typography variant="subtitle1" fontWeight={800}>
               Pagamento
@@ -340,7 +301,6 @@ export default function CheckoutPage() {
           </Paper>
         </Grid>
 
-        {/* direita */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Paper
             variant="outlined"
@@ -350,12 +310,10 @@ export default function CheckoutPage() {
               Resumo do pedido
             </Typography>
             <Divider sx={{ my: 1.5 }} />
-
-            {/* itens */}
             <Stack gap={1.25} sx={{ mb: 1 }}>
-              {items.map((it) => (
+              {items.map((it, idx) => (
                 <Stack
-                  key={it.id}
+                  key={`${it.product.id}-${idx}`}
                   direction="row"
                   alignItems="center"
                   justifyContent="space-between"
@@ -367,11 +325,11 @@ export default function CheckoutPage() {
                     gap={1.25}
                     sx={{ minWidth: 0 }}
                   >
-                    {it.image ? (
+                    {it.product.image ? (
                       <Box
                         component="img"
-                        src={it.image}
-                        alt={it.name}
+                        src={it.product.image}
+                        alt={it.product.name}
                         sx={{
                           width: 44,
                           height: 44,
@@ -392,22 +350,26 @@ export default function CheckoutPage() {
                       />
                     )}
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" noWrap title={it.name}>
-                        {it.name}
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        title={it.product.name}
+                      >
+                        {it.product.name}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        qnt. {it.qty} × {money(it.price)}
+                        qnt. {it.qty} × {money(it.product.price)}
                       </Typography>
                     </Box>
                   </Stack>
-                  <Typography variant="body2">{money(it.line)}</Typography>
+                  <Typography variant="body2">{money(it.lineTotal)}</Typography>
                 </Stack>
               ))}
             </Stack>
 
             <Divider sx={{ my: 1.5 }} />
 
-            {/* cupom */}
+            {/* Cupom */}
             <Stack direction="row" gap={1} alignItems="center" sx={{ mb: 1 }}>
               <DiscountRoundedIcon fontSize="small" />
               <Typography variant="body2" fontWeight={700}>
@@ -439,7 +401,7 @@ export default function CheckoutPage() {
               </Stack>
             )}
 
-            {/* totais */}
+            {/* Totais */}
             <Stack gap={0.75} sx={{ my: 1 }}>
               <RowTotal label="Subtotal" value={money(subtotal)} />
               <RowTotal
@@ -506,7 +468,6 @@ export default function CheckoutPage() {
   );
 }
 
-// --------- pequenos componentes de layout ---------
 function Row({
   icon,
   title,
@@ -542,7 +503,6 @@ function Row({
     </Stack>
   );
 }
-
 function RowTotal({
   label,
   value,

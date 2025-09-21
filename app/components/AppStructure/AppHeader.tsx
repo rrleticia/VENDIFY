@@ -10,9 +10,7 @@ import {
 import { Link, NavLink } from "react-router";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import { useAuthContext } from "@common/contexts/AuthContext";
-
-interface IAppSearchProps {}
+import { useAuthContext, useCart } from "@common/contexts/";
 
 function UserButton() {
   const { isAuthenticated } = useAuthContext();
@@ -37,7 +35,8 @@ function UserButton() {
   }
 }
 
-export default function AppHeader({}: IAppSearchProps) {
+export default function AppHeader({}) {
+  const { itemsCount } = useCart();
   return (
     <AppBar
       position="sticky"
@@ -71,7 +70,7 @@ export default function AppHeader({}: IAppSearchProps) {
           <UserButton></UserButton>
 
           <IconButton component={Link} to="/cart" aria-label="Carrinho">
-            <Badge badgeContent={1} color="primary">
+            <Badge badgeContent={itemsCount} color="primary">
               <ShoppingCartIcon />
             </Badge>
           </IconButton>
