@@ -36,6 +36,7 @@ function Inner() {
     category: "",
     description: "",
   });
+  const [tagsInput, setTagsInput] = React.useState<string>("");
   const [toast, setToast] = React.useState("");
   const [confirmId, setConfirmId] = React.useState<string | null>(null);
 
@@ -48,7 +49,10 @@ function Inner() {
       description: form.description || "",
       category: form.category || "Outros",
       stock: Number(form.stock) || 0,
-      tags: [],
+      tags: (tagsInput || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
       paymentMethods: ["PIX", "Cartão"],
       shippingOptions: [
         { id: "pickup", label: "Retirada no local", icon: "store" },
@@ -64,6 +68,7 @@ function Inner() {
       category: "",
       description: "",
     });
+    setTagsInput("");
     setToast("Produto cadastrado");
   };
 
@@ -93,7 +98,6 @@ function Inner() {
         </Button>
       </Stack>
 
-      {/* Estados vazios / skeletons */}
       {products.length === 0 ? (
         <Card>
           <CardContent>
@@ -108,9 +112,11 @@ function Inner() {
                 <CardMedia
                   component="img"
                   image={p.image}
+                  title={p.name}
                   sx={{
                     width: 220,
                     height: 180,
+                    objectFit: "cover",
                     borderTopLeftRadius: 4,
                     borderTopRightRadius: 4,
                   }}
@@ -118,6 +124,29 @@ function Inner() {
 
                 <CardContent>
                   <Typography variant="subtitle1">{p.name}</Typography>
+                  {!!(p.tags && p.tags.length) && (
+                    <Stack
+                      direction="row"
+                      gap={1}
+                      flexWrap="wrap"
+                      sx={{ my: 0.5 }}
+                    >
+                      {p.tags.map((t, i) => (
+                        <Box
+                          key={i}
+                          sx={{
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 1,
+                            bgcolor: "action.hover",
+                            fontSize: 12,
+                          }}
+                        >
+                          {t}
+                        </Box>
+                      ))}
+                    </Stack>
+                  )}
                   <Typography variant="body2" sx={{ opacity: 0.7 }}>
                     R$ {Number(p.price).toFixed(2)} · Estoque: {p.stock}
                   </Typography>
@@ -197,6 +226,12 @@ function Inner() {
                 value={form.image || ""}
                 onChange={(e) => setForm({ ...form, image: e.target.value })}
               />
+              <TextField
+                label="Tags (separadas por vírgula)"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                helperText="Ex.: camisa, promoção, verão"
+              />
             </Stack>
             <Box
               sx={{
@@ -270,7 +305,6 @@ function Inner() {
         </DialogActions>
       </Dialog>
 
-      {/* Toast */}
       <Snackbar
         open={!!toast}
         autoHideDuration={2000}
