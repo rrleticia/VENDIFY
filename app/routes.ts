@@ -23,5 +23,17 @@ export default [
     route("register", "./pages/client/RegisterPage.tsx"),
   ]),
 
+  // --- Admin ---
+  layout("./pages/admin/AdminLayout.tsx", [
+    route("admin/", "./pages/auxiliar/RedirectAdminPage.tsx"),
+    route("admin/dashboard", "./pages/admin/DashboardAdminPage.tsx"),
+    route("admin/login", "./pages/admin/AdminLoginPage.tsx"),
+    route("admin/catalog", "./pages/admin/CatalogAdminPage.tsx"),
+    route("admin/orders", "./pages/admin/OrdersAdminPage.tsx"),
+    route("admin/logs", "./pages/admin/LogsAdminPage.tsx"),
+    route("admin/security", "./pages/admin/SecurityAdminPage.tsx"),
+    route("admin/users", "./pages/admin/UsersAdminPage.tsx"),
+  ]),
+
   route("*", "./pages/auxiliar/NotFoundPage.tsx"),
 ] satisfies RouteConfig;
