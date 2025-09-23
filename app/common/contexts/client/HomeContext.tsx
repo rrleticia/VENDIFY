@@ -7,21 +7,21 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type { Product } from "@common/types";
+import type { ProductType } from "@common/types";
 import {
   getHomeCollections,
   type HomeCollections,
 } from "@services/api/HomeService";
 import { useCart } from "@common/contexts"; // itens do carrinho, subtotal
-import { useOrders } from "@common/contexts"; // lista de pedidos (para último pedido)
+import { useClientOrders } from "@common/contexts"; // lista de pedidos (para último pedido)
 import { useProfile } from "@common/contexts"; // nome do usuário
 
 type HomeState = {
   loading: boolean;
   banners: HomeCollections["banners"];
-  featured: Product[];
-  deals: Product[];
-  bestRated: Product[];
+  featured: ProductType[];
+  deals: ProductType[];
+  bestRated: ProductType[];
   categories: string[];
 
   // Compostos de outros contextos:
@@ -56,7 +56,7 @@ export function HomeProvider({ children }: { children: React.ReactNode }) {
 
   // Consome o que já existe nos outros contextos
   const { itemsCount, subtotal } = useCart(); // já exposto pelo CartContext :contentReference[oaicite:4]{index=4}
-  const { orders } = useOrders(); // já exposto pelo OrdersContext :contentReference[oaicite:5]{index=5}
+  const { orders } = useClientOrders(); // já exposto pelo OrdersContext :contentReference[oaicite:5]{index=5}
   const { store } = useProfile(); // já exposto pelo ProfileContext :contentReference[oaicite:6]{index=6}
 
   const load = useCallback(async () => {

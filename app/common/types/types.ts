@@ -1,25 +1,6 @@
 // src/common/types.ts
 
 // --- Catálogo / Produto ---
-export type Product = {
-  id: number | string;
-  name: string;
-  image: string;
-  price: number;
-  rating?: number;
-  ratingsCount?: number;
-  badge?: "Novo" | "Promo" | "Mais vendido";
-  category: string;
-  stock?: number;
-  tags?: string[];
-  description?: string;
-  paymentMethods?: string[]; // ["PIX", "Cartão"...]
-  shippingOptions?: {
-    id: "pickup" | "correios" | "carrier";
-    label: string;
-    icon: "store" | "truck";
-  }[];
-};
 
 // --- Pedido ---
 export type OrderStatus =
@@ -116,4 +97,25 @@ export type FreightQuote = {
   label: string;
   price: number;
   etaDays: number;
+};
+
+export type Role = "admin" | "editor" | "vendedor";
+
+export type ActivityLog = {
+  id: string;
+  ts: string; // ISO date
+  user: string; // e-mail ou nome
+  role: Role;
+  action: string; // ex.: "CREATE_PRODUCT", "DELETE_PRODUCT", "UPDATE_ORDER_STATUS", etc.
+  detail?: string;
+};
+
+// @common/types.ts
+
+export type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  city?: string;
 };

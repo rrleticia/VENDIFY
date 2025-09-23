@@ -1,5 +1,10 @@
+export * as AdminAuthService from "./AdminAuthService";
 export * as AuthService from "./AuthService";
-export * as ProductService from "./ProductService";
 export * as CartService from "./CartService";
+export * as CatalogService from "./CatalogService";
+export * as CustomersService from "./CustomersService";
+export * as EmailService from "./EmailService";
+export * as LogsService from "./LogsService";
+export * as ProductService from "./ProductService";
 export * as OrdersService from "./OrdersService";
 export * as ProfileService from "./ProfileService";

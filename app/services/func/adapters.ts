@@ -7,7 +7,7 @@ import type {
   User,
   FreightQuote,
   ShippingOption,
-} from "./types";
+} from "../api/types";
 
 // Exemplos de adapters genéricos — ajuste aos seus campos reais se diferirem:
 

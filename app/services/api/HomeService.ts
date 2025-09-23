@@ -1,6 +1,6 @@
 // src/services/api/HomeService.ts
 import { products, categories } from "@common/mocks";
-import type { Product } from "@common/types";
+import type { ProductType } from "@common/types";
 
 export type HomeCollections = {
   banners: {
@@ -10,9 +10,9 @@ export type HomeCollections = {
     image: string;
     cta?: { label: string; to: string };
   }[];
-  featured: Product[]; // vitrine destaque
-  deals: Product[]; // promoções (badge === "Promo")
-  bestRated: Product[]; // melhor avaliados
+  featured: ProductType[]; // vitrine destaque
+  deals: ProductType[]; // promoções (badge === "Promo")
+  bestRated: ProductType[]; // melhor avaliados
   categories: string[]; // chips de categorias
 };
 

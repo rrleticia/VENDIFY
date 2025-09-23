@@ -36,7 +36,11 @@ interface OrdersCtx {
 
 const Ctx = createContext<OrdersCtx | null>(null);
 
-export function OrdersProvider({ children }: { children: React.ReactNode }) {
+export function ClientOrdersProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFiltersState] = useState<Filters>({
@@ -147,7 +151,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-export function useOrders() {
+export function useClientOrders() {
   const ctx = useContext(Ctx);
   if (!ctx)
     throw new Error("useOrders deve ser usado dentro de OrdersProvider");

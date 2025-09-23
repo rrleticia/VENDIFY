@@ -1,26 +1,14 @@
-import {
-  isRouteErrorResponse,
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "react-router";
-import type { Route } from "./+types/root";
-import {
-  AppThemeProvider,
-  CssBaseline,
-  UserProvider,
-} from "@common/contexts/app";
 import type { ReactNode } from "react";
 import {
-  AuthProvider,
-  HomeProvider,
-  OrdersProvider,
-  ProductDetailsProvider,
-  ProfileProvider,
-} from "@common/contexts/";
-import { CartProvider } from "@common/contexts/";
+  Meta,
+  Links,
+  ScrollRestoration,
+  Scripts,
+  Outlet,
+  isRouteErrorResponse,
+} from "react-router";
+
+import type { Route } from "./+types/root";
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -32,23 +20,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Links />
       </head>
       <body>
-        <AppThemeProvider>
-          <CssBaseline />
-          <UserProvider>
-            <ProfileProvider>
-              <CartProvider>
-                <AuthProvider>
-                  <OrdersProvider>
-                    <ProductDetailsProvider>
-                      <HomeProvider>{children} </HomeProvider>
-                    </ProductDetailsProvider>
-                  </OrdersProvider>
-                </AuthProvider>
-              </CartProvider>
-            </ProfileProvider>
-          </UserProvider>
-        </AppThemeProvider>
-
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -27,7 +27,8 @@
       "@components/*": ["app/components/*"],
       "@common/*": ["app/common/*"],
       "@app/*": ["app/*"],
-      "@services/*": ["app/services/*"]
+      "@services/*": ["app/services/*"],
+      "@pages/*": ["app/pages/*"]
     }
   },
   "include": ["app", "app/common/types/.ts"]

@@ -1,5 +1,6 @@
 // ProductCard.tsx
-import type { Product } from "@app/services/api/ProductService";
+
+import type { ProductType } from "@common/types";
 import {
   Card,
   CardContent,
@@ -12,12 +13,15 @@ import {
 } from "@mui/material";
 import { Link } from "react-router";
 
-type Props = {
-  product: Product;
-  onAddToCart?: (p: Product) => void; // <<< novo
-};
+interface ICatalogProductCardProps {
+  product: ProductType;
+  onAddToCart?: (product: ProductType) => void;
+}
 
-export default function ProductCard({ product, onAddToCart }: Props) {
+export default function CatalogProductCard({
+  product,
+  onAddToCart,
+}: ICatalogProductCardProps) {
   return (
     <Card
       sx={{

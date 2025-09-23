@@ -114,8 +114,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const remove = useCallback(
-    async (productId: string | number, meta?: LineMeta) => {
-      await svcRemove(productId, meta);
+    async (productId: string | number) => {
+      await svcRemove(productId);
       await hydrate();
     },
     [hydrate]

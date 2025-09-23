@@ -1,5 +1,4 @@
-// services/fetchWithAuth.ts
-import { getToken } from "./tokenManager";
+import { getToken } from "@app/services";
 
 export async function fetchWithAuth(
   input: RequestInfo,

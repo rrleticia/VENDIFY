@@ -1,7 +1,8 @@
 // src/services/api/OrdersService.ts
 import type { Order } from "./types";
-import { ordersMock } from "@common/mocks";
-import { toOrder } from "./adapters";
+import { adminMocks, ordersMock } from "@common/mocks";
+import { toOrder } from "../func/adapters";
+import type { AdminOrder, AdminOrderStatus } from "@common/contexts";
 
 let DB: Order[] = ordersMock; // pode trocar por fetch no backend
 
@@ -49,4 +50,19 @@ export async function cancelOrder(id: string): Promise<Order[]> {
 export async function reorder(id: string): Promise<{ ok: true }> {
   // opcional — no front a recomposição do carrinho já está garantida
   return { ok: true };
+}
+
+let ORDERS: AdminOrder[] = [...adminMocks.orders];
+
+export async function list(): Promise<AdminOrder[]> {
+  return new Promise((r) => setTimeout(() => r([...ORDERS]), 250));
+}
+
+export async function updateStatus(
+  id: string,
+  status: AdminOrderStatus
+): Promise<AdminOrder> {
+  ORDERS = ORDERS.map((o) => (o.id === id ? { ...o, status } : o));
+  const updated = ORDERS.find((o) => o.id === id)!;
+  return new Promise((r) => setTimeout(() => r(updated), 200));
 }
