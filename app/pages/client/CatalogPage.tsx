@@ -19,11 +19,11 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useMemo, useState } from "react";
-import ProductCard from "../../components/Pages/ProductCard";
+import ProductCard from "../../components/CatalogProductCard";
 import { categories, products } from "@common/mocks/mocks";
 import { useSearchParams } from "react-router";
 import { useCart } from "@common/contexts/"; // <<< integração
-import type { Product } from "@common/types";
+import type { ProductType } from "@common/types";
 
 type SortKey = "relevance" | "price_asc" | "price_desc";
 
@@ -40,7 +40,7 @@ function normalize(s: string) {
     .toLowerCase();
 }
 
-function matchesQuery(p: Product, q: string) {
+function matchesQuery(p: ProductType, q: string) {
   if (!q) return true;
   const nq = normalize(q);
   const fields = [
@@ -97,7 +97,7 @@ export default function CatalogPage() {
 
   // Integração carrinho
   const { addToCart } = useCart();
-  const handleAdd = (product: Product) => {
+  const handleAdd = (product: ProductType) => {
     void addToCart(product.id, 1); // no catálogo não há CEP/método ainda
   };
 
@@ -138,9 +138,9 @@ export default function CatalogPage() {
 
   // 1) filtro por busca
   const filteredByQuery = useMemo(() => {
-    return products.filter((p) => {
-      const match = matchesQuery(p as Product, q);
-      const promoMatch = !isPromotion || (p as Product).isPromo === true;
+    return products.filter((product: ProductType) => {
+      const match = matchesQuery(product, q);
+      const promoMatch = !isPromotion || product.isPromo === true;
       return match && promoMatch;
     });
   }, [q, isPromotion]);
@@ -150,8 +150,8 @@ export default function CatalogPage() {
     const map = new Map<string, number>();
     for (const p of filteredByQuery) {
       map.set(
-        (p as Product).category,
-        (map.get((p as Product).category) ?? 0) + 1
+        (p as ProductType).category,
+        (map.get((p as ProductType).category) ?? 0) + 1
       );
     }
     return map;
@@ -160,8 +160,8 @@ export default function CatalogPage() {
   // 3) aplica categoria + sort
   const filtered = useMemo(() => {
     let arr = filteredByQuery.filter(
-      (p) => !active || (p as Product).category === active
-    ) as Product[];
+      (p) => !active || (p as ProductType).category === active
+    ) as ProductType[];
     if (sort === "price_asc") arr = [...arr].sort((a, b) => a.price - b.price);
     if (sort === "price_desc") arr = [...arr].sort((a, b) => b.price - a.price);
     return arr;
@@ -380,7 +380,7 @@ export default function CatalogPage() {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {filtered.map((product: Product) => (
+          {filtered.map((product: ProductType) => (
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <ProductCard
                 product={product}

@@ -1,5 +1,5 @@
 // ProductCard.tsx
-import type { Product } from "@app/services/api/ProductService";
+import type { ProductType } from "@common/types";
 import {
   Card,
   CardContent,
@@ -13,11 +13,11 @@ import {
 import { Link } from "react-router";
 
 type Props = {
-  product: Product;
-  onAddToCart?: (p: Product) => void; // <<< novo
+  product: ProductType;
+  onAddToCart?: (product: ProductType) => void; // <<< novo
 };
 
-export default function ProductCard({ product, onAddToCart }: Props) {
+export default function CartalogProductCard({ product, onAddToCart }: Props) {
   return (
     <Card
       sx={{

@@ -1,20 +1,19 @@
 // src/services/api/OrdersService.ts
-import type { Order } from "./types";
+import type { OrderType } from "./types";
 import { ordersMock } from "@common/mocks";
-import { toOrder } from "./adapters";
 
-let DB: Order[] = ordersMock; // pode trocar por fetch no backend
+let DB: OrderType[] = ordersMock; // pode trocar por fetch no backend
 
-export async function listOrders(): Promise<Order[]> {
+export async function listOrders(): Promise<OrderType[]> {
   return DB;
 }
 
 export async function searchOrders(filters: {
   text: string;
-  status: Order["status"] | "ALL";
+  status: OrderType["status"] | "ALL";
   start: string;
   end: string;
-}): Promise<Order[]> {
+}): Promise<OrderType[]> {
   // filtro simples, espelhando seu OrdersPage
   const t = (filters.text || "").toLowerCase();
   const start = filters.start
@@ -37,7 +36,7 @@ export async function searchOrders(filters: {
   });
 }
 
-export async function cancelOrder(id: string): Promise<Order[]> {
+export async function cancelOrder(id: string): Promise<OrderType[]> {
   DB = DB.map((o) =>
     o.id === id
       ? { ...o, status: "CANCELED", canceledAt: new Date().toISOString() }

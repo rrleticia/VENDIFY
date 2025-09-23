@@ -1,8 +1,8 @@
 // src/services/api/ProfileService.ts
-import type { User, Address, Card } from "./types";
+import type { UserType, AddressType, CardType } from "./types";
 import { mockUser, mockAddresses, mockCards } from "@common/mocks";
 
-type Store = { user: User; addresses: Address[]; cards: Card[] };
+type Store = { user: UserType; addresses: AddressType[]; cards: CardType[] };
 
 // mock in-memory (troque por chamadas reais)
 let DB: Store = { user: mockUser, addresses: mockAddresses, cards: mockCards };
@@ -10,11 +10,11 @@ let DB: Store = { user: mockUser, addresses: mockAddresses, cards: mockCards };
 export async function getProfile(): Promise<Store> {
   return DB;
 }
-export async function updateUser(patch: Partial<User>): Promise<Store> {
+export async function updateUser(patch: Partial<UserType>): Promise<Store> {
   DB = { ...DB, user: { ...DB.user, ...patch } };
   return DB;
 }
-export async function upsertAddress(a: Address): Promise<Store> {
+export async function upsertAddress(a: AddressType): Promise<Store> {
   const exists = DB.addresses.some((x) => x.id === a.id);
   const next = exists
     ? DB.addresses.map((x) => (x.id === a.id ? a : x))
@@ -27,7 +27,7 @@ export async function removeAddress(id: string): Promise<Store> {
   DB = { ...DB, addresses: DB.addresses.filter((x) => x.id !== id) };
   return DB;
 }
-export async function upsertCard(c: Card): Promise<Store> {
+export async function upsertCard(c: CardType): Promise<Store> {
   const exists = DB.cards.some((x) => x.id === c.id);
   const next = exists
     ? DB.cards.map((x) => (x.id === c.id ? c : x))

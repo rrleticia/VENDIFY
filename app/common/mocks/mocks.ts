@@ -1,9 +1,15 @@
 // src/common/mocks.ts
 
-import type { Product, Order, User, Card, Address } from "@common/types";
+import type {
+  ProductType,
+  OrderType,
+  UserType,
+  CardType,
+  AddressType,
+} from "@common/types";
 
 // ---------- Produtos e categorias ----------
-export const products: Product[] = [
+export const products: ProductType[] = [
   {
     id: 101,
     name: "Fone Bluetooth XY-300",
@@ -85,7 +91,7 @@ export const categories: string[] = [
 ];
 
 // ---------- Pedidos (ids dos itens == ids dos produtos acima) ----------
-export const ordersMock: Order[] = [
+export const ordersMock: OrderType[] = [
   {
     id: "#2025-0001",
     createdAt: new Date().toISOString(),
@@ -123,7 +129,7 @@ export const ordersMock: Order[] = [
 ];
 
 // ---------- Perfil ----------
-export const mockUser: User = {
+export const mockUser: UserType = {
   name: "Letícia Andrade",
   email: "leticia@example.com",
   phone: "(83) 99999-9999",
@@ -138,7 +144,7 @@ export const mockUser: User = {
   marketingSMS: false,
 };
 
-export const mockAddresses: Address[] = [
+export const mockAddresses: AddressType[] = [
   {
     id: "addr-1",
     label: "Casa",
@@ -158,7 +164,7 @@ export const mockAddresses: Address[] = [
   },
 ];
 
-export const mockCards: Card[] = [
+export const mockCards: CardType[] = [
   {
     id: "card-1",
     brand: "Visa",

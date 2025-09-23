@@ -15,7 +15,6 @@ import {
   Chip,
   Alert,
   Snackbar,
-  IconButton,
 } from "@mui/material";
 import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
 import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
@@ -25,7 +24,7 @@ import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useNavigate } from "react-router";
-import { useCart } from "../contexts/CartContext";
+import { useCart } from "@common/contexts";
 
 type ShippingKind = "pickup" | "pac" | "sedex";
 type PaymentKind = "pix" | "card";

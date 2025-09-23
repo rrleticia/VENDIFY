@@ -28,9 +28,10 @@ import { useEffect, useMemo, useState } from "react";
 
 // ✅ usa o contexto (ordem de hooks estável!)
 
-import type { ShippingMethodId, ShippingOption } from "@common/types";
+import type { ShippingMethodId } from "@common/types";
 import { useProductDetails } from "@common/contexts";
-import ProductCard from "@components/Pages/ProductCard";
+import CatalogProductCard from "@components/CatalogProductCard";
+import type { ShippingOption } from "@app/services/api/types";
 
 function formatBRL(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -375,7 +376,7 @@ export default function ProductDetailsPage() {
               <Grid container spacing={2}>
                 {relatedList.map((p) => (
                   <Grid key={p.id} sx={{ xs: 12, sm: 6, md: 3 }}>
-                    <ProductCard product={p} />
+                    <CatalogProductCard product={p} />
                   </Grid>
                 ))}
               </Grid>

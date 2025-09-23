@@ -1,17 +1,17 @@
 import type {
-  Product,
-  Order,
-  OrderItem,
-  Address,
-  Card,
-  User,
-  FreightQuote,
-  ShippingOption,
-} from "./types";
+  ProductType,
+  OrderType,
+  OrderItemType,
+  AddressType,
+  CardType,
+  UserType,
+  FreightQuoteType,
+  ShippingOptionType,
+} from "../api/types";
 
 // Exemplos de adapters genéricos — ajuste aos seus campos reais se diferirem:
 
-export function toProduct(dto: any): Product {
+export function toProduct(dto: any): ProductType {
   return {
     id: dto.id,
     name: dto.name ?? dto.title,
@@ -29,7 +29,7 @@ export function toProduct(dto: any): Product {
   };
 }
 
-export function toOrderItem(dto: any): OrderItem {
+export function toOrderItem(dto: any): OrderItemType {
   return {
     id: dto.productId ?? dto.id, // garante que seja o MESMO id do catálogo
     name: dto.name,
@@ -39,7 +39,7 @@ export function toOrderItem(dto: any): OrderItem {
   };
 }
 
-export function toOrder(dto: any): Order {
+export function toOrder(dto: any): OrderType {
   return {
     id: dto.id,
     createdAt: dto.createdAt ?? dto.created_at,
@@ -56,7 +56,7 @@ export function toOrder(dto: any): Order {
   };
 }
 
-export function toAddress(dto: any): Address {
+export function toAddress(dto: any): AddressType {
   return {
     id: dto.id,
     name: dto.name,
@@ -70,7 +70,7 @@ export function toAddress(dto: any): Address {
   };
 }
 
-export function toCard(dto: any): Card {
+export function toCard(dto: any): CardType {
   return {
     id: dto.id,
     brand: dto.brand,
@@ -82,7 +82,7 @@ export function toCard(dto: any): Card {
   };
 }
 
-export function toUser(dto: any): User {
+export function toUser(dto: any): UserType {
   return {
     name: dto.name,
     email: dto.email,
@@ -98,7 +98,7 @@ export function toUser(dto: any): User {
   };
 }
 
-export function toFreightQuote(dto: any): FreightQuote {
+export function toFreightQuote(dto: any): FreightQuoteType {
   return {
     id: dto.id,
     label: dto.label,
@@ -107,6 +107,6 @@ export function toFreightQuote(dto: any): FreightQuote {
   };
 }
 
-export function toShippingOption(dto: any): ShippingOption {
+export function toShippingOption(dto: any): ShippingOptionType {
   return { id: dto.id, label: dto.label, icon: dto.icon };
 }

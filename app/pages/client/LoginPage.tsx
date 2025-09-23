@@ -1,7 +1,7 @@
 import { useAuthContext } from "@common/contexts/";
 import { useLoginForm } from "@common/hooks";
-import { InputBox } from "@components/InputBox/InputBox";
-import { InputBoxAdorned } from "@components/InputBox/InputBoxAdorned";
+import { InputBox } from "@components/InputBox";
+import { InputBoxAdorned } from "@components/InputBoxAdorned";
 import { Typography, Stack, Button, Paper } from "@mui/material";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";

@@ -1,6 +1,6 @@
 import { useRegisterForm } from "@common/hooks/forms/RegisterForm";
-import { InputBox } from "@components/InputBox/InputBox";
-import { InputBoxAdorned } from "@components/InputBox/InputBoxAdorned";
+import { InputBox } from "@components/InputBox";
+import { InputBoxAdorned } from "@components/InputBoxAdorned";
 import {
   Paper,
   Button,

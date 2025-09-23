@@ -1,6 +1,3 @@
-// src/services/api/CartService.ts
-import type { OrderItem } from "./types";
-
 // linhas cruas do carrinho (id == product.id)
 export type LineMeta = Record<string, any>;
 export type CartLine = { id: string | number; qty: number; meta?: LineMeta };
