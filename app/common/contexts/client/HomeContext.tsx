@@ -33,14 +33,14 @@ type HomeState = {
 };
 
 interface HomeCtx {
-  state: HomeState;
+  estado: HomeState;
   refresh: () => Promise<void>;
 }
 
 const HomeContext = createContext<HomeCtx | null>(null);
 
 export function HomeProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<HomeState>({
+  const [estado, setState] = useState<HomeState>({
     loading: true,
     banners: [],
     featured: [],
@@ -87,8 +87,8 @@ export function HomeProvider({ children }: { children: React.ReactNode }) {
   }, [load]);
 
   const value = useMemo<HomeCtx>(
-    () => ({ state, refresh: load }),
-    [state, load]
+    () => ({ estado, refresh: load }),
+    [estado, load]
   );
   return <HomeContext.Provider value={value}>{children}</HomeContext.Provider>;
 }

@@ -9,8 +9,8 @@ import { useLocation, useNavigate } from "react-router";
 
 export default function CheckoutSuccessPage() {
   const nav = useNavigate();
-  const { state } = useLocation() as {
-    state?: {
+  const { estado } = useLocation() as {
+    estado?: {
       total: number;
       payment: "pix" | "card";
       shipping: string;
@@ -27,13 +27,13 @@ export default function CheckoutSuccessPage() {
             Pedido confirmado!
           </Typography>
           <Typography color="text.secondary" textAlign="center">
-            {state?.orderId
-              ? `Número do pedido: ${state.orderId}`
+            {estado?.orderId
+              ? `Número do pedido: ${estado.orderId}`
               : "Número do pedido gerado."}
           </Typography>
         </Stack>
 
-        {state?.payment === "pix" ? (
+        {estado?.payment === "pix" ? (
           <Stack alignItems="center" gap={1.5} sx={{ mt: 3 }}>
             <PixRoundedIcon />
             <Typography variant="body2" color="text.secondary">

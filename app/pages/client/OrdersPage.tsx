@@ -50,11 +50,11 @@ type OrderItem = {
 
 type Address = {
   name: string;
-  line1: string;
-  line2?: string;
-  city: string;
-  state: string;
-  zip: string;
+  rua: string;
+  complemento?: string;
+  cidade: string;
+  estado: string;
+  cep: string;
 };
 
 type Payment = { method: "PIX" | "CARD"; last4?: string };
@@ -511,11 +511,11 @@ export default function OrdersPage() {
                               >
                                 {o.address.name}
                                 {" — "}
-                                {o.address.line1}
-                                {o.address.line2 ? `, ${o.address.line2}` : ""}
+                                {o.address.rua}
+                                {o.address.complemento ? `, ${o.address.complemento}` : ""}
                                 {", "}
-                                {o.address.city}/{o.address.state} •{" "}
-                                {o.address.zip}
+                                {o.address.cidade}/{o.address.estado} •{" "}
+                                {o.address.cep}
                               </Typography>
                             </Box>
                           </Stack>

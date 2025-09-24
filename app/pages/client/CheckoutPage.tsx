@@ -35,13 +35,13 @@ function money(n: number) {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { state, subtotal, clear } = useCart();
+  const { estado, subtotal, clear } = useCart();
 
   // endereço
   const [name, setName] = useState("Letícia Andrade");
-  const [zip, setZip] = useState("58400-000");
+  const [cep, setZip] = useState("58400-000");
   const [street, setStreet] = useState("Rua das Flores, 123");
-  const [city, setCity] = useState("Campina Grande");
+  const [cidade, setCity] = useState("Campina Grande");
   const [stateUF, setStateUF] = useState("PB");
 
   // entrega & pagamento
@@ -59,7 +59,7 @@ export default function CheckoutPage() {
     sev: "success" | "info" | "warning" | "error";
   }>({ open: false, msg: "", sev: "success" });
 
-  const items = state.items;
+  const items = estado.items;
 
   const shippingCost = useMemo(() => {
     if (shipping === "pickup") return 0;
@@ -95,7 +95,7 @@ export default function CheckoutPage() {
   }
 
   async function confirmOrder() {
-    if (!name || !zip || !street || !city || !stateUF) {
+    if (!name || !cep || !street || !cidade || !stateUF) {
       setSnack({
         open: true,
         msg: "Preencha o endereço completo.",
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
     await clear();
     navigate("/checkout/success", {
       replace: true,
-      state: { total, payment, shipping, orderId: `#${Date.now()}` },
+      estado: { total, payment, shipping, orderId: `#${Date.now()}` },
     });
   }
 
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
                 <TextField
                   label="CEP"
                   fullWidth
-                  value={zip}
+                  value={cep}
                   onChange={(e) => setZip(e.target.value)}
                 />
               </Grid>
@@ -179,7 +179,7 @@ export default function CheckoutPage() {
                 <TextField
                   label="Cidade"
                   fullWidth
-                  value={city}
+                  value={cidade}
                   onChange={(e) => setCity(e.target.value)}
                 />
               </Grid>

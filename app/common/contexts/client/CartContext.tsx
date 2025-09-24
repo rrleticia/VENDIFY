@@ -39,7 +39,7 @@ interface CartState {
 }
 
 interface CartCtx {
-  state: CartState;
+  estado: CartState;
   addToCart: (
     productId: string | number,
     stock: number,
@@ -60,7 +60,7 @@ interface CartCtx {
 const CartContext = createContext<CartCtx | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<CartState>({ items: [], loading: true });
+  const [estado, setState] = useState<CartState>({ items: [], loading: true });
 
   const hydrate = useCallback(async () => {
     setState((s) => ({ ...s, loading: true }));
@@ -127,17 +127,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [hydrate]);
 
   const subtotal = useMemo(
-    () => state.items.reduce((acc, it) => acc + it.lineTotal, 0),
-    [state.items]
+    () => estado.items.reduce((acc, it) => acc + it.lineTotal, 0),
+    [estado.items]
   );
   const itemsCount = useMemo(
-    () => state.items.reduce((acc, it) => acc + it.qty, 0),
-    [state.items]
+    () => estado.items.reduce((acc, it) => acc + it.qty, 0),
+    [estado.items]
   );
 
   const value: CartCtx = useMemo(
     () => ({
-      state,
+      estado,
       addToCart,
       setQty,
       remove,
@@ -145,7 +145,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       subtotal,
       itemsCount,
     }),
-    [state, addToCart, setQty, remove, clear, subtotal, itemsCount]
+    [estado, addToCart, setQty, remove, clear, subtotal, itemsCount]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -42,13 +42,16 @@ export default function AdminLayout() {
   const [open, setOpen] = React.useState(false);
   const crumbs = useBreadcrumb();
 
-  const Menu = (
+const Menu = (
     <Box role="presentation" sx={{ width: drawerWidth }}>
       <List>
         {authed && (
           <>
             <ListItemButton component={RouterLink} to="/admin/catalog">
               <ListItemText primary="Catálogo" />
+            </ListItemButton>
+            <ListItemButton component={RouterLink} to="/admin/categories">
+              <ListItemText primary="Categorias" />
             </ListItemButton>
             <ListItemButton component={RouterLink} to="/admin/orders">
               <ListItemText primary="Pedidos" />
@@ -120,6 +123,11 @@ export default function AdminLayout() {
             {authed && (
               <Button component={RouterLink} to="/admin/catalog">
                 Catálogo
+              </Button>
+            )}
+            {authed && (
+              <Button component={RouterLink} to="/admin/categories">
+                Categorias
               </Button>
             )}
             {authed && (

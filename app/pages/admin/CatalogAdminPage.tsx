@@ -1,4 +1,5 @@
 import React from "react";
+import { categories, badges } from "@common/mocks";
 import {
   Box,
   Button,
@@ -12,6 +13,13 @@ import {
   DialogContentText,
   Stack,
   TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
   Typography,
   Grid,
   Snackbar,
@@ -33,7 +41,8 @@ function Inner() {
     price: 0,
     stock: 0,
     image: "",
-    category: "",
+    categoryId: "",
+      badgeIds: [],
     description: "",
   });
   const [tagsInput, setTagsInput] = React.useState<string>("");
@@ -47,7 +56,7 @@ function Inner() {
       image: form.image || "https://picsum.photos/seed/NEW/800/600",
       price: Number(form.price) || 0,
       description: form.description || "",
-      category: form.category || "Outros",
+      categoryId: form.categoryId || "",
       stock: Number(form.stock) || 0,
       tags: (tagsInput || "")
         .split(",")
@@ -65,7 +74,8 @@ function Inner() {
       price: 0,
       stock: 0,
       image: "",
-      category: "",
+      categoryId: "",
+      badgeIds: [],
       description: "",
     });
     setTagsInput("");
@@ -199,6 +209,21 @@ function Inner() {
                   setForm({ ...form, price: Number(e.target.value) })
                 }
               />
+              <FormGroup row sx={{ gap: 2 }}>
+                {badges.map(b => (
+                  <FormControlLabel
+                    key={b.id}
+                    control={<Checkbox checked={form.badgeIds?.includes(b.id) || false}
+                      onChange={(e)=>{
+                        const set = new Set(form.badgeIds || []);
+                        if(e.target.checked) set.add(b.id); else set.delete(b.id);
+                        setForm({ ...form, badgeIds: Array.from(set) });
+                      }}
+                    />}
+                    label={b.label}
+                  />
+                ))}
+              </FormGroup>
               <TextField
                 label="Estoque"
                 type="number"
@@ -207,11 +232,19 @@ function Inner() {
                   setForm({ ...form, stock: Number(e.target.value) })
                 }
               />
-              <TextField
-                label="Categoria"
-                value={form.category || ""}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              />
+              <FormControl>
+                <InputLabel id="cat-label">Categoria</InputLabel>
+                <Select
+                  labelId="cat-label"
+                  label="Categoria"
+                  value={form.categoryId || ""}
+                  onChange={(e)=> setForm({ ...form, categoryId: e.target.value as string })}
+                >
+                  {categories.map(c => (
+                    <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 label="Descrição"
                 multiline

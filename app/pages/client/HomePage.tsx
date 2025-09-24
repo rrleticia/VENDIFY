@@ -1,5 +1,7 @@
 // src/routes/HomePage.tsx
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+import { badges } from "@common/mocks";
 import {
   Box,
   Container,
@@ -33,7 +35,7 @@ import { Link as RouterLink } from "react-router";
 // 🔗 integrações com o ecossistema (sem alterar componentes)
 import { useHome } from "@common/contexts"; // expõe state: featured, categories, etc.
 import { formatBRL } from "@common/util"; // helper centralizado
-import type { Product } from "@common/types"; // tipo unificado do catálogo
+import type { ProductType } from "@common/types"; // tipo unificado do catálogo
 
 // ---------------- Small Components ----------------
 function StatBadge({
@@ -79,7 +81,7 @@ function StatBadge({
   );
 }
 
-function ProductCard({ p }: { p: Product }) {
+function ProductCard({ p }: { p: ProductType }) {
   const rating = p.rating ?? 0;
   return (
     <Card
@@ -91,26 +93,25 @@ function ProductCard({ p }: { p: Product }) {
       }}
     >
       <Box sx={{ position: "relative" }}>
-        {p.badge && (
-          <Chip
-            size="small"
-            color={
-              p.badge === "Promo"
-                ? "error"
-                : p.badge === "Novo"
-                  ? "primary"
-                  : "success"
-            }
-            label={p.badge}
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              zIndex: 1,
-              borderRadius: 1.5,
-            }}
-          />
-        )}
+        {p.badgeIds?.length &&
+          (() => {
+            const b = badges.find((x) => p.badgeIds!.includes(x.id));
+            if (!b) return null;
+            return (
+              <Chip
+                size="small"
+                color={b.color ?? "primary"}
+                label={b.label}
+                sx={{
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  zIndex: 1,
+                  borderRadius: 1.5,
+                }}
+              />
+            );
+          })}
         <CardMedia
           component="img"
           src={p.image}
@@ -149,26 +150,23 @@ function ProductCard({ p }: { p: Product }) {
 
 // ---------------- Page ----------------
 export default function HomePage() {
+  const nav = useNavigate();
   // ✅ pega os dados do contexto (em vez de mocks locais)
-  const { state } = useHome();
+  const { estado } = useHome();
 
   const [openRegras, setOpenRegras] = useState(false);
 
   // Destaques: mantém a mesma lógica de slice(0, 4)
   const featured = useMemo(
-    () => (state.featured ?? []).slice(0, 4),
-    [state.featured]
+    () => (estado.featured ?? []).slice(0, 4),
+    [estado.featured]
   );
 
   // A página original esperava CATEGORIES como { slug, label }
   // O contexto expõe string[], então derivamos aqui sem alterar o JSX
   const CATEGORIES = useMemo(
-    () =>
-      (state.categories ?? []).map((label) => ({
-        label,
-        slug: String(label),
-      })),
-    [state.categories]
+    () => (estado.categories ?? []).map((c) => ({ label: c.name, slug: c.id })),
+    [estado.categories]
   );
 
   return (
@@ -313,7 +311,7 @@ export default function HomePage() {
               key={c.slug}
               label={c.label}
               component={RouterLink}
-              to={`/catalog?category=${c.slug}`}
+              to={`/catalog?categoryId=${c.slug}`}
               clickable
               sx={{
                 py: 1,
@@ -350,7 +348,7 @@ export default function HomePage() {
         <Grid container spacing={2}>
           {featured.map((p) => (
             <Grid key={p.id} sx={{ xs: 12, sm: 6, md: 3 }}>
-              <ProductCard p={p as Product} />
+              <ProductCard p={p as ProductType} />
             </Grid>
           ))}
         </Grid>
@@ -397,7 +395,7 @@ export default function HomePage() {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => setOpenRegras(true)}
+                    onClick={() => nav(`/catalog?categoryId=${c.id}`)}
                   >
                     Regras
                   </Button>
@@ -417,7 +415,7 @@ export default function HomePage() {
         <DialogTitle>
           Regras do Cupom e Funcionalidades
           <IconButton
-            onClick={() => setOpenRegras(false)}
+            onClick={() => nav(`/catalog?categoryId=${c.id}`)}
             sx={{ position: "absolute", top: 8, right: 8 }}
           >
             <CloseRoundedIcon />

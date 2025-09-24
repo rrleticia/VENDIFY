@@ -6,6 +6,8 @@ export const STORAGE_KEYS = {
   roles: "buyly.adminRoles",
   logs: "buyly.logs",
   emails: "buyly.emailQueue",
+  categories: "buyly.categories",
+  users: "buyly.users",
 } as const;
 
 export function loadJSON<T>(key: string, fallback: T): T {

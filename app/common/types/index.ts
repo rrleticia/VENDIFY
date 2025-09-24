@@ -5,3 +5,6 @@ export * from "./CardType";
 export * from "./OrderType";
 export * from "./ProductType";
 export * from "./UserType";
+
+export * from "./CategoryType";
+export * from "./BadgeType";

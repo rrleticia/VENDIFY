@@ -1,5 +1,5 @@
 // src/services/api/HomeService.ts
-import { products, categories } from "@common/mocks";
+import { products, categories, badges } from "@common/mocks";
 import type { ProductType } from "@common/types";
 
 export type HomeCollections = {
@@ -13,7 +13,7 @@ export type HomeCollections = {
   featured: ProductType[]; // vitrine destaque
   deals: ProductType[]; // promoções (badge === "Promo")
   bestRated: ProductType[]; // melhor avaliados
-  categories: string[]; // chips de categorias
+  categories: import("@common/types").CategoryType[]; // chips de categorias
 };
 
 export async function getHomeCollections(): Promise<HomeCollections> {
@@ -33,12 +33,12 @@ export async function getHomeCollections(): Promise<HomeCollections> {
       subtitle: "Mouses precisos para sua gameplay",
       image:
         "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=1600&auto=format&fit=crop",
-      cta: { label: "Ver mouses", to: "/catalog?category=Mouses" },
+      cta: { label: "Ver mouses", to: "/catalog?categoryId=cat-mouses" },
     },
   ];
 
   const featured = products.slice(0, 4);
-  const deals = products.filter((p) => p.badge === "Promo").slice(0, 8);
+  const deals = products.filter(p => p.badgeIds?.includes(badges.find(b=>b.slug==="promo")!.id)).slice(0, 8);
   const bestRated = [...products]
     .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
     .slice(0, 8);

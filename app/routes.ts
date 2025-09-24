@@ -29,6 +29,7 @@ export default [
     route("admin/dashboard", "./pages/admin/DashboardAdminPage.tsx"),
     route("admin/login", "./pages/admin/AdminLoginPage.tsx"),
     route("admin/catalog", "./pages/admin/CatalogAdminPage.tsx"),
+    route("admin/categories", "./pages/admin/CategoriesAdminPage.tsx"),
     route("admin/orders", "./pages/admin/OrdersAdminPage.tsx"),
     route("admin/logs", "./pages/admin/LogsAdminPage.tsx"),
     route("admin/security", "./pages/admin/SecurityAdminPage.tsx"),

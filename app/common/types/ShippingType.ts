@@ -1,13 +1,7 @@
-// src/common/types.ts
-
-// --- Perfil ---
-
-// --- Checkout / Frete ---
-export type ShippingKindType = "pickup" | "pac" | "sedex";
-
-export type PaymentKindType = "pix" | "card";
+// src/common/types/ShippingType.ts
 
 export type ShippingMethodId = "pickup" | "correios" | "carrier";
+export type ShippingKindType = ShippingMethodId;
 
 export type ShippingOptionType = {
   id: ShippingMethodId;

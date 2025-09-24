@@ -5,15 +5,11 @@ export type ProductType = {
   price: number;
   rating?: number;
   ratingsCount?: number;
-  badge?: "Novo" | "Promo" | "Mais vendido";
-  category: string;
+  categoryId: string;
+  badgeIds?: string[];
   stock?: number;
   tags?: string[];
   description?: string;
   paymentMethods?: string[]; // ["PIX", "Cartão"...]
-  shippingOptions?: {
-    id: "pickup" | "correios" | "carrier";
-    label: string;
-    icon: "store" | "truck";
-  }[];
+  shippingOptions?: import("./ShippingType").ShippingOptionType[];
 };

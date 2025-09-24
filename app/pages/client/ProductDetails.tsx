@@ -1,4 +1,5 @@
 // ProductDetailsPage.tsx
+import { categories } from "@common/mocks";
 import {
   Box,
   Grid,
@@ -77,10 +78,7 @@ export default function ProductDetailsPage() {
   const isOutOfStock = stock <= 0;
   const isLowStock = !isOutOfStock && stock <= 5;
 
-  const categoryPath = useMemo(
-    () => (product?.category ? [product.category] : []),
-    [product?.category]
-  );
+  const categoryPath = useMemo(() => { const c = categories.find(x=>x.id===product?.categoryId); return c? [c.name] : []; }, [product?.categoryId]);
 
   const relatedList = useMemo(() => {
     if (!product?.category) return [];

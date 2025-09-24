@@ -14,4 +14,6 @@ export type {
   ShippingMethodId,
   ShippingOptionType,
   UserType,
+  CategoryType,
+  BadgeType,
 } from "@common/types";
