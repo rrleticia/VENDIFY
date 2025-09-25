@@ -16,4 +16,6 @@ export type ProductType = {
     label: string;
     icon: "store" | "truck";
   }[];
+  isDigital?: boolean;
+  downloadUrl?: string;
 };

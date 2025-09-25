@@ -24,14 +24,13 @@ import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import PixRoundedIcon from "@mui/icons-material/PixRounded";
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import { useParams, Link, useNavigate, Navigate } from "react-router";
+import { useCart } from "@common/contexts";
 import { useEffect, useMemo, useState } from "react";
-
-// ✅ usa o contexto (ordem de hooks estável!)
 
 import type { ShippingMethodId } from "@common/types";
 import { useProductDetails } from "@common/contexts";
 import CatalogProductCard from "@components/CatalogProductCard";
-import type { ShippingOption } from "@app/services/api/types";
+import type { ShippingOptionType as ShippingOption } from "@app/services/api/types";
 
 function formatBRL(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -94,6 +93,8 @@ export default function ProductDetailsPage() {
 
   const totalValue = total ?? product?.price ?? 0;
 
+  const { addToCart } = useCart();
+
   const handleCalcFrete = async () => {
     setCalcTouched(true);
     if (state.cep.replace(/\D/g, "").length !== 8) return;
@@ -110,9 +111,6 @@ export default function ProductDetailsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipping]);
-
-  // ⚠️ Em vez de "return <Navigate/>" aqui (o que muda a contagem de hooks),
-  // fazemos o branch dentro do JSX, mantendo todos os hooks sempre executados.
   const notFound = !state.loading && !product;
 
   return (
@@ -348,8 +346,13 @@ export default function ProductDetailsPage() {
                     size="large"
                     disabled={isOutOfStock}
                     onClick={() => {
-                      // TODO: integrar com carrinho (context/Redux/zustand)
-                      // addToCart(product!.id, 1, { shipping, cep: state.cep, freight: fretes?.[shipping] })
+                      if (!product) return;
+                      void addToCart(
+                        String(product.id),
+                        product.stock ?? 1,
+                        1,
+                        { shipping, cep: state.cep, freight: fretes?.[shipping] }
+                      );
                     }}
                   >
                     Adicionar ao carrinho

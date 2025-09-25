@@ -45,7 +45,29 @@ export async function cancelOrder(id: string): Promise<OrderType[]> {
   return DB;
 }
 
-export async function reorder(id: string): Promise<{ ok: true }> {
+export async function reorder(_id: string): Promise<{ ok: true }> {
   // opcional — no front a recomposição do carrinho já está garantida
   return { ok: true };
+}
+
+export async function createOrder(order: Partial<OrderType>): Promise<OrderType> {
+  // cria id simples se não houver
+  const id = order.id ?? `#${new Date().getFullYear()}-${String(
+    Date.now()
+  ).slice(-6)}`;
+  const created: OrderType = {
+    id,
+    createdAt: new Date().toISOString(),
+    status: (order.status as any) ?? "PENDING",
+    items: (order.items as OrderType["items"]) ?? [],
+    address: (order.address as OrderType["address"]) as any,
+    payment: (order.payment as OrderType["payment"]) as any,
+    shipment: (order.shipment as OrderType["shipment"]) as any,
+    subtotal: (order.subtotal as number) ?? 0,
+    shipping: (order.shipping as number) ?? 0,
+    discount: (order.discount as number) ?? 0,
+    total: (order.total as number) ?? 0,
+  };
+  DB = [created, ...DB];
+  return created;
 }

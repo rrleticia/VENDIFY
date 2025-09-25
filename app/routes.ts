@@ -16,6 +16,8 @@ export default [
     route("profile", "./pages/client/ProfilePage.tsx"),
     route("checkout", "./pages/client/CheckoutPage.tsx"),
     route("checkout/success", "./pages/client/CheckoutSuccessPage.tsx"),
+    route("tracking/:id", "./pages/client/TrackingPage.tsx"),
+    route("pix/qr", "./pages/client/PixQrPage.tsx"),
   ]),
 
   layout("./pages/client/AuthLayout.tsx", [

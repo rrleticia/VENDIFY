@@ -5,6 +5,7 @@ import type {
   FreightQuoteType,
 } from "./types";
 import { products } from "@common/mocks";
+import { quoteFreight } from "../helpers/quoteFreight";
 
 export async function getProductById(
   id: string | number
@@ -28,15 +29,13 @@ export async function calcFreightForOptions(
   options: ShippingOptionType[],
   cep: string
 ): Promise<Partial<Record<ShippingOptionType["id"], FreightQuoteType>>> {
-  // mock de cotação
+  const ids = options.map((o) => o.id);
+  const quoted = await quoteFreight(ids, cep);
   const map: Partial<Record<ShippingOptionType["id"], FreightQuoteType>> = {};
   for (const o of options) {
-    if (o.id === "pickup")
-      map[o.id] = { id: o.id, label: o.label, price: 0, etaDays: 0 };
-    if (o.id === "correios")
-      map[o.id] = { id: o.id, label: o.label, price: 29.9, etaDays: 6 };
-    if (o.id === "carrier")
-      map[o.id] = { id: o.id, label: o.label, price: 39.9, etaDays: 3 };
+    const q = quoted[o.id];
+    if (q) map[o.id] = { id: q.id as any, label: q.label, price: q.price, etaDays: q.etaDays };
+    else map[o.id] = { id: o.id as any, label: o.label, price: 0, etaDays: 0 };
   }
   return map;
 }

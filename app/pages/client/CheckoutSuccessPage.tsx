@@ -15,6 +15,11 @@ export default function CheckoutSuccessPage() {
       payment: "pix" | "card";
       shipping: string;
       orderId: string;
+      items?: Array<{
+        id: string | number;
+        name: string;
+        downloadUrl?: string;
+      }>;
     };
   };
 
@@ -37,11 +42,29 @@ export default function CheckoutSuccessPage() {
           <Stack alignItems="center" gap={1.5} sx={{ mt: 3 }}>
             <PixRoundedIcon />
             <Typography variant="body2" color="text.secondary">
-              Escaneie o QR Code na próxima tela para concluir o pagamento.
+              Escaneie o QR Code abaixo para concluir o pagamento.
             </Typography>
+
+            <Box
+              component="img"
+              src="https://cdn.jornalestadodegoias.com.br/wp-content/uploads/2020/04/qr-code.jpg"
+              alt="QR Code PIX"
+              sx={{
+                width: 260,
+                height: 260,
+                objectFit: "contain",
+                borderRadius: 1,
+                mt: 1,
+              }}
+            />
             <Button
               variant="contained"
-              onClick={() => nav("/pix/qr", { replace: true })}
+              onClick={() =>
+                nav("/pix/qr", {
+                  replace: true,
+                  state: { orderId: state?.orderId, total: state?.total },
+                })
+              }
             >
               Ver QR Code PIX
             </Button>
@@ -56,6 +79,28 @@ export default function CheckoutSuccessPage() {
             Pagamento no cartão em processamento.
           </Typography>
         )}
+
+        {/* Digital items: show download links if present in navigation state */}
+        {state?.items?.length ? (
+          <Stack sx={{ mt: 3 }} gap={1}>
+            <Typography variant="subtitle1" fontWeight={800}>
+              Downloads
+            </Typography>
+            {state.items
+              .filter((it: any) => !!it.downloadUrl)
+              .map((it: any) => (
+                <Button
+                  key={it.id}
+                  variant="outlined"
+                  href={it.downloadUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Baixar: {it.name}
+                </Button>
+              ))}
+          </Stack>
+        ) : null}
 
         <Stack direction="row" justifyContent="center" gap={1.5} sx={{ mt: 3 }}>
           <Button

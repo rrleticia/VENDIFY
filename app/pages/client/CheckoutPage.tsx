@@ -25,6 +25,8 @@ import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRound
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useNavigate } from "react-router";
 import { useCart } from "@common/contexts";
+import { useOrders } from "@common/contexts";
+import { createOrder } from "@services/api/OrdersService";
 
 type ShippingKind = "pickup" | "pac" | "sedex";
 type PaymentKind = "pix" | "card";
@@ -94,6 +96,8 @@ export default function CheckoutPage() {
     setCoupon("");
   }
 
+  const { refresh: refreshOrders } = useOrders();
+
   async function confirmOrder() {
     if (!name || !zip || !street || !city || !stateUF) {
       setSnack({
@@ -107,10 +111,43 @@ export default function CheckoutPage() {
       setSnack({ open: true, msg: "Carrinho vazio.", sev: "warning" });
       return;
     }
+    // cria pedido no "backend" de mock
+    const created = await createOrder({
+        items: state.items.map((it: any) => ({
+        id: it.product.id,
+        name: it.product.name,
+        image: it.product.image,
+        price: it.product.price,
+        qty: it.qty,
+        ...(it.product?.isDigital ? { downloadUrl: it.product.downloadUrl } : {}),
+      })),
+      address: {
+        name,
+        line1: street,
+        city,
+        state: stateUF,
+        zip,
+      },
+      payment: { method: payment.toUpperCase() as any },
+      shipment: { method: shipping === "pickup" ? "Retirada" : "Correios" },
+      subtotal,
+      shipping: shippingCost,
+      discount,
+      total,
+    });
+
+    // limpa carrinho local
     await clear();
+    // atualiza OrdersContext para refletir novo pedido
+    try {
+      await refreshOrders();
+    } catch {
+      /* não crítico */
+    }
+
     navigate("/checkout/success", {
       replace: true,
-      state: { total, payment, shipping, orderId: `#${Date.now()}` },
+      state: { total, payment, shipping, orderId: created.id, items: created.items },
     });
   }
 

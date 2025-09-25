@@ -15,6 +15,7 @@ export type OrderItemType = {
   image: string;
   price: number;
   qty: number;
+  downloadUrl?: string;
 };
 
 export type PaymentType = { method: "PIX" | "CARD"; last4?: string };

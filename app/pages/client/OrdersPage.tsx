@@ -150,12 +150,12 @@ export default function OrdersPage() {
 
   // Mantém o mesmo filtro client-side do arquivo original
   const filtered = useMemo(() => {
-    return orders.filter((o) => {
+    return orders.filter((o: Order) => {
       const search = filters.text ?? "";
       const matchText =
         !search ||
         o.id.toLowerCase().includes(search.toLowerCase()) ||
-        o.items.some((it) =>
+        o.items.some((it: OrderItem) =>
           it.name.toLowerCase().includes(search.toLowerCase())
         );
       const matchStatus =
@@ -285,7 +285,7 @@ export default function OrdersPage() {
 
       {/* Lista de pedidos */}
       <Stack gap={2} sx={{ mt: 2 }}>
-        {filtered.map((o) => {
+  {filtered.map((o: Order) => {
           const activeStep = STEP_INDEX[o.status];
           return (
             <Paper key={o.id} variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
@@ -335,9 +335,9 @@ export default function OrdersPage() {
               >
                 <Stack direction="row" alignItems="center" gap={1.5}>
                   <ItemsAvatars items={o.items} />
-                  <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary">
                     {o.items.length} item(ns) •{" "}
-                    {o.items.map((i) => `${i.qty}x ${i.name}`).join(", ")}
+                    {o.items.map((i: OrderItem) => `${i.qty}x ${i.name}`).join(", ")}
                   </Typography>
                 </Stack>
 
@@ -427,7 +427,7 @@ export default function OrdersPage() {
                           Itens do pedido
                         </Typography>
                         <Stack divider={<Divider flexItem />} gap={1}>
-                          {o.items.map((it) => (
+                          {o.items.map((it: OrderItem) => (
                             <Stack
                               key={it.id}
                               direction="row"
@@ -463,6 +463,31 @@ export default function OrdersPage() {
                             </Stack>
                           ))}
                         </Stack>
+
+                        {/* Digital downloads */}
+                        {o.items.some((it: OrderItem) => (it as any).downloadUrl) && (
+                          <Box sx={{ mt: 2 }}>
+                            <Typography fontWeight={700} gutterBottom>
+                              Downloads
+                            </Typography>
+                            <Stack direction="row" gap={1} flexWrap="wrap">
+                              {o.items
+                                .filter((it: OrderItem) => (it as any).downloadUrl)
+                                .map((it: OrderItem) => (
+                                  <Button
+                                    key={`dl-${it.id}`}
+                                    variant="outlined"
+                                    href={(it as any).downloadUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    size="small"
+                                  >
+                                    Baixar {it.name}
+                                  </Button>
+                                ))}
+                            </Stack>
+                          </Box>
+                        )}
 
                         <Divider sx={{ my: 1.5 }} />
 

@@ -80,6 +80,23 @@ export const products: ProductType[] = [
       { id: "carrier", label: "Transportadora", icon: "truck" },
     ],
   },
+  {
+    id: 201,
+    name: "Aprenda TypeScript - E-book",
+    image:
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1400&auto=format&fit=crop",
+    price: 29.9,
+    rating: 4.9,
+    category: "E-books",
+    stock: 9999,
+    tags: ["ebook", "typescript", "programação"],
+    paymentMethods: ["PIX", "Cartão"],
+    isDigital: true,
+    downloadUrl:
+      "https://example.com/downloads/aprenda-typescript-ebook.pdf",
+    // keep an empty array for shippingOptions on digital items
+    shippingOptions: [],
+  },
 ];
 
 export const categories: string[] = [
@@ -125,6 +142,34 @@ export const ordersMock: OrderType[] = [
     shipping: 0,
     discount: 0,
     total: 488.5,
+  },
+  {
+    id: "#2025-0002",
+    createdAt: new Date().toISOString(),
+    status: "PAID",
+    items: [
+      {
+        id: 201,
+        name: "Aprenda TypeScript - E-book",
+        image: products.find((p) => p.id === 201)!.image,
+        price: 29.9,
+        qty: 1,
+        ...( { downloadUrl: products.find((p) => p.id === 201)!.downloadUrl } as any ),
+      },
+    ],
+    address: {
+      name: "Letícia Andrade",
+      line1: "Entrega por link (digital)",
+      city: "—",
+      state: "—",
+      zip: "00000-000",
+    },
+    payment: { method: "PIX" },
+    shipment: { method: "Retirada" },
+    subtotal: 29.9,
+    shipping: 0,
+    discount: 0,
+    total: 29.9,
   },
 ];
 
