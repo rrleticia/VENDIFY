@@ -61,16 +61,14 @@ function CardPaymentForm({ total, onSuccess }: { total: number; onSuccess: () =>
       alert(result.error.message);
     } 
     else if (result.paymentIntent?.status === "succeeded") {
-  // Limpa o carrinho
     onSuccess();
-    // Redireciona para página de sucesso
     navigate("/checkout/success", {
       state: {
         total,
         payment: "card",
-        shipping: "correios", // ou freteSelecionado?.nome se tiver
+        shipping: "correios", 
         orderId: `#${Date.now()}`,
-        hasDigitalProducts: false, // ou true se tiver e-books
+        hasDigitalProducts: false, 
         digitalItems: [],
       },
       replace: true,
