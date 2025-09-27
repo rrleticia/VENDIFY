@@ -2,6 +2,7 @@
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
+
 const stripePromise = loadStripe("pk_test_51S8ruPK5Bj6WctFELhsFKizat0yWqknDy36ox9Op8qyFPgmszYX8jA7Qnvb6nalH6mgDjwUthN4dGRGwp5r082yd00aUOTpb4L");
 
 import { useMemo, useState } from "react";
@@ -27,11 +28,13 @@ import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useCart } from "@common/contexts";
 import FreteCalculator from "@components/FreteCalculator";
 
+
 type PaymentKind = "pix" | "card";
+
 
 function money(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -61,16 +64,14 @@ function CardPaymentForm({ total, onSuccess }: { total: number; onSuccess: () =>
       alert(result.error.message);
     } 
     else if (result.paymentIntent?.status === "succeeded") {
-  // Limpa o carrinho
     onSuccess();
-    // Redireciona para página de sucesso
     navigate("/checkout/success", {
       state: {
         total,
         payment: "card",
-        shipping: "correios", // ou freteSelecionado?.nome se tiver
+        shipping: "correios",
         orderId: `#${Date.now()}`,
-        hasDigitalProducts: false, // ou true se tiver e-books
+        hasDigitalProducts: false, 
         digitalItems: [],
       },
       replace: true,
@@ -205,7 +206,7 @@ export default function CheckoutPage() {
           <Typography
             variant="body2"
             sx={{ cursor: "pointer" }}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/catalog", { replace: true })}
           >
             Voltar
           </Typography>

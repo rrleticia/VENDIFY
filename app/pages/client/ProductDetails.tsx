@@ -26,7 +26,7 @@ import PixRoundedIcon from "@mui/icons-material/PixRounded";
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import { useParams, Link, useNavigate, Navigate } from "react-router";
 import { useEffect, useMemo, useState } from "react";
-
+import { useCart } from "@common/contexts";
 import type { ShippingMethodId } from "@common/types";
 import { useProductDetails } from "@common/contexts";
 import CatalogProductCard from "@components/CatalogProductCard";
@@ -39,6 +39,9 @@ function formatBRL(v: number) {
 export default function ProductDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { addToCart } = useCart();
+  const [quantity, setQuantity] = useState(1);
+
 
   const { state, loadById, updateCep, selectShipping, calcFreight, total } =
     useProductDetails();
@@ -332,15 +335,28 @@ export default function ProductDetailsPage() {
 
                 {/* Ações */}
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    disabled={isOutOfStock}
-                    onClick={() => {
-                    }}
-                  >
-                    Adicionar ao carrinho
-                  </Button>
+                  <Box display="flex" alignItems="center" gap={2} mt={2}>
+                    <TextField
+                      type="number"
+                      label="Quantidade"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                      inputProps={{ min: 1, max: product?.stock ?? 99 }}
+                      sx={{ width: 120 }}
+                    />
+                    <Button
+                      variant="contained"
+                      size="large"
+                      disabled={isOutOfStock}
+                      onClick={() => {
+                        if (product) {
+                          void addToCart(product.id, product.stock ?? 0, quantity);
+                        }
+                      }}
+                    >
+                      Adicionar ao carrinho
+                    </Button>
+                  </Box>
                   <Button
                     variant="outlined"
                     size="large"

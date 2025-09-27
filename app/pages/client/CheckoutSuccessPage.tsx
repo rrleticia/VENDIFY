@@ -23,6 +23,7 @@ export default function CheckoutSuccessPage() {
         };
         qty: number;
       }>;
+      fromPixQr?: boolean;
     };
   };
 
@@ -43,7 +44,17 @@ export default function CheckoutSuccessPage() {
           </Typography>
         </Stack>
 
-        {estado?.payment === "pix" ? (
+        {/* Lógica de mensagem de pagamento */}
+        {estado?.payment === "pix" && estado?.fromPixQr ? (
+          <Typography
+            sx={{ mt: 3 }}
+            variant="body2"
+            color="text.secondary"
+            textAlign="center"
+          >
+            Pagamento no PIX em processamento.
+          </Typography>
+        ) : estado?.payment === "pix" ? (
           <Stack alignItems="center" gap={1.5} sx={{ mt: 3 }}>
             <PixRoundedIcon />
             <Typography variant="body2" color="text.secondary">
@@ -51,7 +62,7 @@ export default function CheckoutSuccessPage() {
             </Typography>
             <Button
               variant="contained"
-              onClick={() => nav("/pix/qr", { replace: true })}
+              onClick={() => nav("/pix/qr", { replace: true, state })}
             >
               Ver QR Code PIX
             </Button>

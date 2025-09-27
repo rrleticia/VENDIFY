@@ -7,9 +7,20 @@ import {
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router";
+import { useLocation } from "react-router";
+
 
 export default function PixQRCodePage() {
   const navigate = useNavigate();
+  const { state } = useLocation() as {
+  state?: {
+    total: number;
+    payment: "pix";
+    shipping: string;
+    orderId: string;
+  };
+};
+
 
   return (
     <Box sx={{ maxWidth: 400, mx: "auto", p: 3 }}>
@@ -60,13 +71,16 @@ export default function PixQRCodePage() {
 
           {/* Back Button */}
           <Button
-            variant="contained"
-            fullWidth
-            onClick={() => navigate("/pedidos")}
-            sx={{ mt: 2 }}
-          >
-            Voltar
-          </Button>
+          variant="contained"
+          fullWidth
+          onClick={() => navigate("/checkout/success", { 
+            state: { ...state, fromPixQr: true } 
+          })}
+          sx={{ mt: 2 }}
+        >
+          Voltar
+        </Button>
+
         </Stack>
       </Paper>
     </Box>
