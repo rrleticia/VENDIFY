@@ -6,9 +6,9 @@ import {
   Typography,
   Button,
 } from "@mui/material";
+
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router";
-
 
 export default function PixQRCodePage() {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ export default function PixQRCodePage() {
     orderId: string;
   };
 };
-
 
   return (
     <Box sx={{ maxWidth: 400, mx: "auto", p: 3 }}>
