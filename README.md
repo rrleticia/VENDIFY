@@ -12,7 +12,13 @@ A modern, production-ready template for building full-stack React applications u
 - 🔄 Data loading and mutations
 - 🔒 TypeScript by default
 - 🎉 TailwindCSS for styling
+- 💳 Payment integration with Stripe (credit card) and PIX
 - 📖 [React Router docs](https://reactrouter.com/)
+
+## Team
+- [Bruna Letícia](https://github.com/brunaletsleticia)
+- [Leticia Ramos](https://github.com/rrleticia)
+- [Maria Luiza](https://github.com/MariaLuizaCavalcanti)
 
 ## Getting Started
 
@@ -26,8 +32,15 @@ npm install
 
 ### Development
 
-Start the development server with HMR:
+You need to run both the backend and the frontend in separate terminals:
 
+#### Backend
+
+```bash
+node index.js
+```
+
+#### Frontend
 ```bash
 npm run dev
 ```
@@ -77,6 +90,15 @@ Make sure to deploy the output of `npm run build`
 │   ├── client/    # Static assets
 │   └── server/    # Server-side code
 ```
+
+## Payment Setup
+
+This project includes payment integration using Stripe for credit cards and a simulated PIX flow.
+
+### Environment Variables
+
+Create a `.env` file in the root of the project to store your secret keys.  
+
 
 ## Styling
 

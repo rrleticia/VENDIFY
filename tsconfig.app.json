@@ -30,5 +30,5 @@
       "@services/*": ["app/services/*"]
     }
   },
-  "include": ["app", "app/common/types/.ts"]
+  "include": ["app", "app/common/types/.ts", "index.js"]
 }

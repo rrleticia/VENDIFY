@@ -1,4 +1,9 @@
 // src/routes/CheckoutPage.tsx
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe("pk_test_51S8ruPK5Bj6WctFELhsFKizat0yWqknDy36ox9Op8qyFPgmszYX8jA7Qnvb6nalH6mgDjwUthN4dGRGwp5r082yd00aUOTpb4L");
+
 import { useMemo, useState } from "react";
 import {
   Box,
@@ -32,7 +37,66 @@ function money(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function CardPaymentForm({ total, onSuccess }: { total: number; onSuccess: () => void }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    const res = await fetch("http://localhost:4242/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: total, method: "card" }),
+    });
+    const { client_secret } = await res.json();
+
+    const result = await stripe.confirmCardPayment(client_secret, {
+      payment_method: { card: elements.getElement(CardElement)! },
+    });
+
+    if (result.error) {
+      alert(result.error.message);
+    } 
+    else if (result.paymentIntent?.status === "succeeded") {
+  // Limpa o carrinho
+    onSuccess();
+    // Redireciona para página de sucesso
+    navigate("/checkout/success", {
+      state: {
+        total,
+        payment: "card",
+        shipping: "correios", // ou freteSelecionado?.nome se tiver
+        orderId: `#${Date.now()}`,
+        hasDigitalProducts: false, // ou true se tiver e-books
+        digitalItems: [],
+      },
+      replace: true,
+    });
+  }
+
+  };
+
+  return (
+  <form onSubmit={handleSubmit}>
+    <CardElement
+      options={{
+        style: { base: { fontSize: "16px" } },
+        hidePostalCode: true
+      }}
+    />
+    <Button type="submit" fullWidth variant="contained" sx={{ mt: 2 }}>
+      Pagar com cartão
+    </Button>
+  </form>
+);
+}
+
+
 export default function CheckoutPage() {
+
   const navigate = useNavigate();
   const { estado, subtotal, clear } = useCart();
 
@@ -297,17 +361,12 @@ export default function CheckoutPage() {
                 O QR Code será exibido após confirmar o pedido.
               </Alert>
             ) : (
-              <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                <Grid size={{ xs: 12, md: 8 }}>
-                  <TextField label="Número do cartão (mock)" fullWidth />
-                </Grid>
-                <Grid size={{ xs: 6, md: 2 }}>
-                  <TextField label="Validade" placeholder="MM/AA" fullWidth />
-                </Grid>
-                <Grid size={{ xs: 6, md: 2 }}>
-                  <TextField label="CVV" fullWidth />
-                </Grid>
-              </Grid>
+              <Elements stripe={stripePromise}>
+                <CardPaymentForm 
+                  total={total} 
+                  onSuccess={async () => await clear()} 
+                />
+              </Elements>
             )}
           </Paper>
         </Grid>
