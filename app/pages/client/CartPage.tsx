@@ -1,4 +1,3 @@
-// src/routes/CartPage.tsx
 import { useMemo, useEffect, useState } from "react";
 import {
   Box,

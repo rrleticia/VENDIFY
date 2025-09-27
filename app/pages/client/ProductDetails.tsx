@@ -27,8 +27,6 @@ import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import { useParams, Link, useNavigate, Navigate } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 
-// ✅ usa o contexto (ordem de hooks estável!)
-
 import type { ShippingMethodId } from "@common/types";
 import { useProductDetails } from "@common/contexts";
 import CatalogProductCard from "@components/CatalogProductCard";
@@ -42,18 +40,15 @@ export default function ProductDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // ---- hooks (sempre chamados, em todas as renders) ----
   const { state, loadById, updateCep, selectShipping, calcFreight, total } =
     useProductDetails();
 
   const [calcTouched, setCalcTouched] = useState(false);
 
-  // carrega produto quando muda o :id
   useEffect(() => {
     if (id) void loadById(id);
   }, [id, loadById]);
 
-  // dados do contexto
   const product = state.product;
   const related = state.related ?? [];
   const shipping = state.shipping as string;
@@ -63,7 +58,6 @@ export default function ProductDetailsPage() {
   >;
   const freteLoading = state.freteLoading;
 
-  // fallbacks (mantém seus componentes)
   const stock = product?.stock ?? 12;
   const paymentMethods = product?.paymentMethods ?? ["PIX", "Cartão"];
   const DEFAULT_OPTIONS: ShippingOption[] = [
@@ -106,11 +100,8 @@ export default function ProductDetailsPage() {
     ) {
       void handleCalcFrete();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipping]);
 
-  // ⚠️ Em vez de "return <Navigate/>" aqui (o que muda a contagem de hooks),
-  // fazemos o branch dentro do JSX, mantendo todos os hooks sempre executados.
   const notFound = !state.loading && !product;
 
   return (
@@ -346,8 +337,6 @@ export default function ProductDetailsPage() {
                     size="large"
                     disabled={isOutOfStock}
                     onClick={() => {
-                      // TODO: integrar com carrinho (context/Redux/zustand)
-                      // addToCart(product!.id, 1, { shipping, cep: state.cep, freight: fretes?.[shipping] })
                     }}
                   >
                     Adicionar ao carrinho

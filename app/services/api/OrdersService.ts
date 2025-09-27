@@ -1,8 +1,8 @@
 // src/services/api/OrdersService.ts
-import type { OrderType } from "./types";
+import type { OrderType } from "@common/types";
 import { ordersMock } from "@common/mocks";
 
-let DB: OrderType[] = ordersMock; // pode trocar por fetch no backend
+let DB: OrderType[] = ordersMock;
 
 export async function listOrders(): Promise<OrderType[]> {
   return DB;
@@ -14,7 +14,6 @@ export async function searchOrders(filters: {
   start: string;
   end: string;
 }): Promise<OrderType[]> {
-  // filtro simples, espelhando seu OrdersPage
   const t = (filters.text || "").toLowerCase();
   const start = filters.start
     ? new Date(`${filters.start}T00:00:00`).getTime()
@@ -46,6 +45,5 @@ export async function cancelOrder(id: string): Promise<OrderType[]> {
 }
 
 export async function reorder(_id: string): Promise<{ ok: true }> {
-  // opcional — no front a recomposição do carrinho já está garantida
   return { ok: true };
 }

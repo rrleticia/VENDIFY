@@ -36,28 +36,23 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { estado, subtotal, clear } = useCart();
 
-  // endereço
   const [name, setName] = useState("Letícia Andrade");
   const [cep, setZip] = useState("58400-000");
   const [street, setStreet] = useState("Rua das Flores, 123");
   const [cidade, setCity] = useState("Campina Grande");
   const [stateUF, setStateUF] = useState("PB");
 
-  // entrega & pagamento
   const [payment, setPayment] = useState<PaymentKind>("pix");
-  
-  // frete dinâmico
+
   const [freteSelecionado, setFreteSelecionado] = useState<{
     valor: number;
     prazo: number;
     nome: string;
   } | null>(null);
 
-  // cupom
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
-  // feedback
   const [snack, setSnack] = useState<{
     open: boolean;
     msg: string;
@@ -66,19 +61,15 @@ export default function CheckoutPage() {
 
   const items = estado.items;
 
-  // Verificar se o carrinho contém apenas ebooks/produtos digitais
   const hasOnlyDigitalProducts = items.length > 0 && items.every(item => item.product.isDigital);
   const hasPhysicalProducts = items.some(item => !item.product.isDigital);
   const hasMixedProducts = items.some(item => item.product.isDigital) && hasPhysicalProducts;
 
   const shippingCost = useMemo(() => {
-    // Se só há produtos digitais, não há custo de entrega
     if (hasOnlyDigitalProducts) return 0;
-    
-    // Se o frete foi calculado pelos Correios, usar esse valor
+
     if (freteSelecionado) return freteSelecionado.valor;
-    
-    // Fallback para cálculo fixo se não houver frete selecionado
+
     return 0;
   }, [hasOnlyDigitalProducts, freteSelecionado]);
 
@@ -110,7 +101,6 @@ export default function CheckoutPage() {
   }
 
   async function confirmOrder() {
-    // Para produtos digitais, o endereço não é obrigatório
     if (hasPhysicalProducts && (!name || !cep || !street || !cidade || !stateUF)) {
       setSnack({
         open: true,

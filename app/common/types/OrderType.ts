@@ -1,6 +1,5 @@
 import type { AddressType } from "./AddressType";
 
-// --- Pedido ---
 export type OrderStatusType =
   | "PENDING"
   | "PAID"

@@ -1,5 +1,3 @@
-// src/common/mocks.ts
-
 import type {
   ProductType,
   OrderType,
@@ -10,7 +8,6 @@ import type {
   BadgeType,
 } from "@common/types";
 
-// ---------- Catálogo e entidades ----------
 export const categories: CategoryType[] = [
   { id: "cat-audio", name: "Fones", slug: "fones", active: true },
   {
@@ -36,7 +33,6 @@ export const badges: BadgeType[] = [
   },
 ];
 
-// ---------- Produtos ----------
 export const products: ProductType[] = [
   {
     id: 101,
@@ -176,7 +172,6 @@ export const products: ProductType[] = [
   },
 ];
 
-// ---------- Pedidos (ids dos itens == ids dos produtos acima) ----------
 export const ordersMock: OrderType[] = [
   {
     id: "fe3898cc-1814-417e-abbd-4324b9f8cbf5",
@@ -184,14 +179,14 @@ export const ordersMock: OrderType[] = [
     status: "PAID",
     items: [
       {
-        id: 102, // Teclado Mecânico Aurora
+        id: 102,
         name: "Teclado Mecânico Aurora",
         image: products.find((p) => p.id === 102)!.image,
         price: 299.0,
         qty: 1,
       },
       {
-        id: 103, // Mouse Gamer Helios
+        id: 103,
         name: "Mouse Gamer Helios",
         image: products.find((p) => p.id === 103)!.image,
         price: 189.5,
@@ -214,14 +209,13 @@ export const ordersMock: OrderType[] = [
     discount: 0,
     total: 488.5,
   },
-  // Pedido com ebook para demonstração
   {
     id: "ebook-001",
-    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 dia atrás
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
     status: "AVAILABLE",
     items: [
       {
-        id: 105, // JavaScript: O Guia Definitivo
+        id: 105,
         name: "JavaScript: O Guia Definitivo",
         image: products.find((p) => p.id === 105)!.image,
         price: 49.9,

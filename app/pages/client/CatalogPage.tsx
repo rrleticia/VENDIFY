@@ -66,30 +66,25 @@ export default function CatalogPage() {
   const cParam = params.get("categoryId");
   const isPromotion = params.get("promotion") === "true";
 
-  // Barra de busca: visibilidade + valor local (sem form/submit)
   const [showSearch, setShowSearch] = useState<boolean>(!!q);
   const [searchInput, setSearchInput] = useState<string>(q);
 
-  // Integração carrinho
   const { addToCart } = useCart();
   const handleAdd = (product: ProductType) => {
-    void addToCart(product.id, 1); // no catálogo não há CEP/método ainda
+    void addToCart(product.id, 1);
   };
 
-  // URL -> estado (categoria)
   useEffect(() => {
     const resolved = resolveCategoryParam(cParam);
     setActive((prev) => (prev === resolved ? prev : resolved));
   }, [cParam]);
 
-  // Sincroniza o texto do input quando ?name muda via chips/botões
   useEffect(() => {
     setSearchInput(q);
     if (q && !showSearch) setShowSearch(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  // helpers: mexer na URL (sem submit)
   const setCategoryParam = (cat: string | null) => {
     const next = new URLSearchParams(params);
     if (!cat) next.delete("categoryId");
@@ -111,7 +106,6 @@ export default function CatalogPage() {
     setParams(next, { replace: true });
   };
 
-  // 1) filtro por busca
   const filteredByQuery = useMemo(() => {
     return products.filter((product: ProductType) => {
       const match = matchesQuery(product, q, isPromotion);
@@ -123,7 +117,6 @@ export default function CatalogPage() {
     });
   }, [q, isPromotion]);
 
-  // 2) contadores por categoria baseados na busca
   const countsByCategory = useMemo(() => {
     const map = new Map<string, number>();
     console.log("filteredByQuery", filteredByQuery);
@@ -138,7 +131,6 @@ export default function CatalogPage() {
     return map;
   }, [filteredByQuery]);
 
-  // 3) aplica categoria + sort
   const filtered = useMemo(() => {
     let arr = filteredByQuery.filter(
       (p) => !active || (p as ProductType).categoryId === active
@@ -211,10 +203,10 @@ export default function CatalogPage() {
             clickable
             sx={{
               mr: 0.5,
-              py: 1,           // ✅ Padding vertical maior
-              px: 1,           // ✅ Padding horizontal maior  
-              borderRadius: 2, // ✅ Bordas mais arredondadas
-              fontWeight: 600, // ✅ Fonte mais forte
+              py: 1,          
+              px: 1,          
+              borderRadius: 2, 
+              fontWeight: 600, 
             }}
           />
 
@@ -246,10 +238,10 @@ export default function CatalogPage() {
                 clickable
                 sx={{ 
                   mr: 0.5,
-                  py: 1,           // ✅ Padding vertical maior
-                  px: 1,           // ✅ Padding horizontal maior  
-                  borderRadius: 2, // ✅ Bordas mais arredondadas
-                  fontWeight: 600, // ✅ Fonte mais forte
+                  py: 1,          
+                  px: 1,           
+                  borderRadius: 2, 
+                  fontWeight: 600, 
                 }}
               />
             );
@@ -282,10 +274,10 @@ export default function CatalogPage() {
             clickable
             sx={{ 
               mr: 0.5,
-              py: 1,           // ✅ Padding vertical maior
-              px: 1,           // ✅ Padding horizontal maior  
-              borderRadius: 2, // ✅ Bordas mais arredondadas
-              fontWeight: 600, // ✅ Fonte mais forte
+              py: 1,           
+              px: 1,          
+              borderRadius: 2, 
+              fontWeight: 600, 
             }}
           />
 
@@ -381,8 +373,7 @@ export default function CatalogPage() {
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <ProductCard
                 product={product}
-                // seu card já exibe tags abaixo por padrão; se tiver prop, mantenha
-                onAddToCart={() => handleAdd(product)} // <<< integração
+                onAddToCart={() => handleAdd(product)} 
               />
             </Grid>
           ))}

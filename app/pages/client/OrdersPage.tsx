@@ -66,8 +66,8 @@ type Shipment = {
 };
 
 type Order = {
-  id: string; // ex: #2025-0001
-  createdAt: string; // ISO date
+  id: string; 
+  createdAt: string;
   status: OrderStatus;
   items: OrderItem[];
   address: Address;
@@ -114,7 +114,7 @@ const STEP_INDEX: Record<OrderStatus, number> = {
   PICKING: 2,
   SHIPPED: 3,
   DELIVERED: 4,
-  CANCELED: 0, // tratamos cancelado à parte
+  CANCELED: 0,
 };
 
 // -------- Small components --------
@@ -143,12 +143,10 @@ function ItemsAvatars({ items }: { items: OrderItem[] }) {
 
 // -------- Page --------
 export default function OrdersPage() {
-  // Integração ao contexto (sem alterar UI)
   const { orders, filters, setFilters, cancel, makeReorder } = useOrders();
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Mantém o mesmo filtro client-side do arquivo original
   const filtered = useMemo(() => {
     return orders.filter((o) => {
       const search = filters.text ?? "";
@@ -178,14 +176,11 @@ export default function OrdersPage() {
     status === "PENDING" || status === "PAID";
 
   const onCancel = (id: string) => {
-    // chama o backend via contexto
     void cancel(id);
   };
 
   const onReorder = (o: Order) => {
-    // dispara lógica de recompra via contexto (e mantém o link para /cart como no original)
     void makeReorder(o.id);
-    // o link de navegação permanece no botão (RouterLink) como antes
   };
 
   return (

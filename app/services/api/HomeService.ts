@@ -10,14 +10,13 @@ export type HomeCollections = {
     image: string;
     cta?: { label: string; to: string };
   }[];
-  featured: ProductType[]; // vitrine destaque
-  deals: ProductType[]; // promoções (badge === "Promo")
-  bestRated: ProductType[]; // melhor avaliados
-  categories: import("@common/types").CategoryType[]; // chips de categorias
+  featured: ProductType[]; 
+  deals: ProductType[]; 
+  bestRated: ProductType[]; 
+  categories: import("@common/types").CategoryType[]; 
 };
 
 export async function getHomeCollections(): Promise<HomeCollections> {
-  // banners mockados (apenas aqui, não existem em outros contextos)
   const banners = [
     {
       id: "bn-1",

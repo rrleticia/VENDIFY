@@ -40,7 +40,6 @@ export async function deleteProduct(id: ProductType["id"]): Promise<{ok:true}> {
   return { ok: true };
 }
 
-// Emula upload: apenas devolve uma URL blob/placeholder; UI deve salvar via updateProduct
 export async function uploadProductImage(id: ProductType["id"], file: File): Promise<string> {
   await wait(200);
   const url = typeof URL !== "undefined" && file ? URL.createObjectURL(file) : `https://picsum.photos/seed/${id}/600/400`;

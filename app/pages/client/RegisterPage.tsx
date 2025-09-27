@@ -43,14 +43,12 @@ export default function RegisterPage() {
     event.preventDefault();
     setLoading(true);
 
-    // Verifica erros de preenchimento antes de fazer login
     if (verifyErrors()) {
       try {
         const payload: IRegisterInterface = { ...formData };
         await register(payload);
         navigate("/home");
       } catch (err) {
-        // E log para devs
         console.error("[register] error:", err);
       } finally {
         setLoading(false);
@@ -84,9 +82,9 @@ function RegisterTitle() {
           top: 76,
           left: 0,
           width: "100%",
-          height: 360, // altura da faixa colorida
+          height: 360, 
           bgcolor: "primary.light",
-          zIndex: -1, // garante que fique atrás do conteúdo
+          zIndex: -1,
         }}
       />
       <Typography

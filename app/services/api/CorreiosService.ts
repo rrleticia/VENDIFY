@@ -1,8 +1,7 @@
-// Serviço para cálculo de frete simplificado baseado apenas no CEP
 export type FreteOption = {
   codigo: string;
   nome: string;
-  prazo: number; // dias úteis
+  prazo: number;
   valor: number;
   erro?: string;
 };
@@ -11,10 +10,8 @@ export type CalculoFreteParams = {
   cepDestino: string;
 };
 
-// CEP da loja (configurável)
-const CEP_ORIGEM = "58400-000"; // Campina Grande - PB
+const CEP_ORIGEM = "58400-000";
 
-// Códigos dos serviços dos Correios
 const SERVICOS = {
   SEDEX: "40010",
   PAC: "41106",
@@ -45,7 +42,6 @@ async function consultarCorreiosAPI(params: CalculoFreteParams): Promise<FreteOp
     },
   ];
 
-  // Se for região metropolitana ou próxima, adicionar SEDEX 10
   if (distanciaEstimada < 100) {
     opcoes.push({
       codigo: SERVICOS.SEDEX_10,
@@ -58,33 +54,26 @@ async function consultarCorreiosAPI(params: CalculoFreteParams): Promise<FreteOp
   return opcoes;
 }
 
-// Função auxiliar para estimar distância baseada no CEP
 function calcularDistanciaEstimada(cepOrigem: string, cepDestino: string): number {
   const origem = cepOrigem.replace(/\D/g, '');
   const destino = cepDestino.replace(/\D/g, '');
-  
-  // Lógica simplificada baseada nos primeiros dígitos do CEP
+
   const prefixoOrigem = parseInt(origem.substring(0, 2));
   const prefixoDestino = parseInt(destino.substring(0, 2));
-  
-  // Diferença entre regiões (aproximação)
-  const diferencaRegional = Math.abs(prefixoDestino - prefixoOrigem);
-  
-  // Estimar distância baseada na diferença de CEP
-  if (diferencaRegional === 0) return 20; // Mesma cidade
-  if (diferencaRegional <= 2) return 80; // Estado próximo
-  if (diferencaRegional <= 5) return 200; // Região próxima
-  if (diferencaRegional <= 10) return 500; // Região distante
-  return 800; // Muito distante
-}
 
-// Validar CEP brasileiro
+  const diferencaRegional = Math.abs(prefixoDestino - prefixoOrigem);
+ 
+  if (diferencaRegional === 0) return 20; 
+  if (diferencaRegional <= 2) return 80; 
+  if (diferencaRegional <= 5) return 200; 
+  if (diferencaRegional <= 10) return 500; 
+  return 800; }
+
 export function validarCEP(cep: string): boolean {
   const cepLimpo = cep.replace(/\D/g, '');
   return cepLimpo.length === 8 && /^\d{8}$/.test(cepLimpo);
 }
 
-// Formatar CEP
 export function formatarCEP(cep: string): string {
   const cepLimpo = cep.replace(/\D/g, '');
   if (cepLimpo.length === 8) {
@@ -93,7 +82,6 @@ export function formatarCEP(cep: string): string {
   return cep;
 }
 
-// Buscar endereço por CEP (integração com ViaCEP)
 export async function buscarEnderecoPorCEP(cep: string) {
   const cepLimpo = cep.replace(/\D/g, '');
   
@@ -123,7 +111,6 @@ export async function buscarEnderecoPorCEP(cep: string) {
   }
 }
 
-// Calcular frete principal (simplificado)
 export async function calcularFrete(params: CalculoFreteParams): Promise<FreteOption[]> {
   if (!validarCEP(params.cepDestino)) {
     throw new Error('CEP de destino inválido');

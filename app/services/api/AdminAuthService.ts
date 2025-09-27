@@ -14,7 +14,6 @@ export function isAuthenticated(): boolean {
 }
 
 export function login(email: string, password: string): { ok: boolean; message?: string } {
-  // Simple fixed credential per requirements
   if (email === "admin@gmail.com" && password === "admin") {
     const state: AuthState = { userId: "u-admin", email, name: "Admin Root" };
     saveJSON(KEY, state);

@@ -9,8 +9,6 @@ import type {
   ShippingOptionType,
 } from "../api/types";
 
-// Exemplos de adapters genéricos — ajuste aos seus campos reais se diferirem:
-
 export function toProduct(dto: any): ProductType {
   return {
     id: dto.id,
@@ -31,7 +29,7 @@ export function toProduct(dto: any): ProductType {
 
 export function toOrderItem(dto: any): OrderItemType {
   return {
-    id: dto.productId ?? dto.id, // garante que seja o MESMO id do catálogo
+    id: dto.productId ?? dto.id,
     name: dto.name,
     image: dto.image,
     price: Number(dto.price ?? dto.unitPrice ?? 0),

@@ -4,7 +4,6 @@ import { mockUser, mockAddresses, mockCards } from "@common/mocks";
 
 type Store = { user: UserType; addresses: AddressType[]; cards: CardType[] };
 
-// mock in-memory (troque por chamadas reais)
 let DB: Store = { user: mockUser, addresses: mockAddresses, cards: mockCards };
 
 export async function getProfile(): Promise<Store> {

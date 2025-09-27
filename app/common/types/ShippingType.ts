@@ -1,5 +1,3 @@
-// src/common/types/ShippingType.ts
-
 export type ShippingMethodId = "pickup" | "correios" | "carrier" | "digital";
 export type ShippingKindType = ShippingMethodId;
 

@@ -24,14 +24,11 @@ export default function LoginPage() {
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setLoading(true);
-
-    // Verifica erros de preenchimento antes de fazer login
     if (verifyErrors()) {
       try {
         await login(formData.email, formData.password);
         navigate("/home");
       } catch (err) {
-        // Exibe erro no formulário (por ex., email e senha errados)
         if (handleErrorChange) {
           handleErrorChange({
             email: "O e-mail ou a senha estão incorretos.",

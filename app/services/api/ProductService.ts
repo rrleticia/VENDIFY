@@ -28,7 +28,6 @@ export async function calcFreightForOptions(
   options: ShippingOptionType[],
   cep: string
 ): Promise<Partial<Record<ShippingOptionType["id"], FreightQuoteType>>> {
-  // mock de cotação
   const map: Partial<Record<ShippingOptionType["id"], FreightQuoteType>> = {};
   for (const o of options) {
     if (o.id === "pickup")

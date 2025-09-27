@@ -1,4 +1,3 @@
-// ProductCard.tsx
 import type { ProductType } from "@common/types";
 import {
   Card,
@@ -16,7 +15,7 @@ import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 
 type Props = {
   product: ProductType;
-  onAddToCart?: (product: ProductType) => void; // <<< novo
+  onAddToCart?: (product: ProductType) => void;
 };
 
 export default function CartalogProductCard({ product, onAddToCart }: Props) {

@@ -99,40 +99,33 @@ function maskCard(c: Card) {
 
 // ---------------- Page ----------------
 export default function ProfilePage() {
-  // user
   const { user: currentUser } = useUserContext();
   const { logout } = useAuthContext();
   useEffect(() => { if (currentUser) setUser(currentUser as User); }, [currentUser]);
   const [user, setUser] = useState<User>(currentUser ?? MOCK_USER);
   const [savingUser, setSavingUser] = useState(false);
 
-  // avatar
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
     user.avatar
   );
 
-  // addresses
   const [addresses, setAddresses] = useState<Address[]>(MOCK_ADDRESSES);
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
-  // cards
   const [cards, setCards] = useState<Card[]>(MOCK_CARDS);
   const [cardDialogOpen, setCardDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
 
-  // password & privacy
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
 
-  // notifications
-  const ordersCount = 12; // mock
-  const points = 380; // mock
-  const coupons = 2; // mock
+  const ordersCount = 12; 
+  const points = 380;
+  const coupons = 2; 
 
-  // feedback
   const [snack, setSnack] = useState<{
     open: boolean;
     msg: string;
@@ -143,7 +136,6 @@ export default function ProfilePage() {
     severity: "success",
   });
 
-  // handlers - user
   const onSaveUser = () => {
     setSavingUser(true);
     setTimeout(() => {
@@ -173,7 +165,6 @@ export default function ProfilePage() {
     reader.readAsDataURL(f);
   };
 
-  // handlers - address
   const openNewAddress = () => {
     setEditingAddress({
       id: `addr-${Date.now()}`,
@@ -212,7 +203,6 @@ export default function ProfilePage() {
     setSnack({ open: true, msg: "Endereço removido.", severity: "warning" });
   };
 
-  // handlers - cards
   const openNewCard = () => {
     setEditingCard({
       id: `card-${Date.now()}`,
@@ -258,7 +248,6 @@ export default function ProfilePage() {
     setSnack({ open: true, msg: "Cartão removido.", severity: "warning" });
   };
 
-  // handlers - password
   const changePassword = () => {
     if (!oldPass || newPass.length < 6 || newPass !== confirmPass) {
       setSnack({
@@ -278,7 +267,6 @@ export default function ProfilePage() {
     });
   };
 
-  // handlers - danger zone
   const deleteAccount = () => {
     setSnack({
       open: true,
@@ -288,7 +276,6 @@ export default function ProfilePage() {
   };
 
   return (
-    // >>> Ajuste principal: ocupar toda a largura do layout, sem "max-content"
     <Container maxWidth="lg" sx={{ py: 3, width: 1 }}>
       {/* Header */}
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}>

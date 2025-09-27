@@ -32,10 +32,10 @@ import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { Link as RouterLink } from "react-router";
 
-// 🔗 integrações com o ecossistema (sem alterar componentes)
-import { useHome } from "@common/contexts"; // expõe state: featured, categories, etc.
-import { formatBRL } from "@common/util"; // helper centralizado
-import type { ProductType } from "@common/types"; // tipo unificado do catálogo
+
+import { useHome } from "@common/contexts";
+import { formatBRL } from "@common/util"; 
+import type { ProductType } from "@common/types";
 
 // ---------------- Small Components ----------------
 function StatBadge({
@@ -151,19 +151,16 @@ function ProductCard({ p }: { p: ProductType }) {
 // ---------------- Page ----------------
 export default function HomePage() {
   const nav = useNavigate();
-  // ✅ pega os dados do contexto (em vez de mocks locais)
+
   const { estado } = useHome();
 
   const [openRegras, setOpenRegras] = useState(false);
 
-  // Destaques: mantém a mesma lógica de slice(0, 4)
+ 
   const featured = useMemo(
     () => (estado.featured ?? []).slice(0, 4),
     [estado.featured]
   );
-
-  // A página original esperava CATEGORIES como { slug, label }
-  // O contexto expõe string[], então derivamos aqui sem alterar o JSX
   const CATEGORIES = useMemo(
     () => (estado.categories ?? []).map((c) => ({ label: c.name, slug: c.id })),
     [estado.categories]
@@ -252,7 +249,7 @@ export default function HomePage() {
         </Container>
       </Box>
 
-      {/* BARRA DESTAQUES (PIX, Frete, Retirada, Cartão) */}
+      {/* BARRA DESTAQUES */}
       <Container sx={{ mt: 3 }}>
         <Grid container spacing={2} sx={{ justifyContent: "center" }}>
           <Grid sx={{ xs: 12, sm: 6, md: 3 }}>

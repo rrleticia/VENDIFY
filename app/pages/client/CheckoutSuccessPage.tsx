@@ -1,7 +1,3 @@
-// CheckoutSuccessPage.tsx (opcional)
-// Rota de sucesso para onde navegamos após confirmar o pedido.
-// Use em routes: route("/checkout/success", <CheckoutSuccessPage />)
-
 import { Box, Paper, Stack, Typography, Button, Chip, Divider } from "@mui/material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import PixRoundedIcon from "@mui/icons-material/PixRounded";
@@ -30,7 +26,7 @@ export default function CheckoutSuccessPage() {
     };
   };
 
-  const estado = state; // Manter compatibilidade
+  const estado = state;
 
   return (
     <Box sx={{ maxWidth: 760, mx: "auto", p: 2 }}>
