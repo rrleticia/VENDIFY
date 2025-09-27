@@ -10,6 +10,7 @@ import {
 import { Link, NavLink } from "react-router";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import { useAuthContext, useCart } from "@common/contexts/";
 
 function UserButton() {
@@ -20,6 +21,9 @@ function UserButton() {
       <>
         <Button component={NavLink} to="/orders" color="inherit">
           Pedidos
+        </Button>
+        <Button component={NavLink} to="/ebooks" color="inherit" startIcon={<MenuBookRoundedIcon />}>
+          E-books
         </Button>
         <Button component={NavLink} to="/profile" color="inherit">
           Perfil

@@ -21,6 +21,7 @@ export const categories: CategoryType[] = [
   },
   { id: "cat-monitors", name: "Monitores", slug: "monitores", active: true },
   { id: "cat-mouses", name: "Mouses", slug: "mouses", active: true },
+  { id: "cat-ebooks", name: "E-books", slug: "ebooks", active: true },
   { id: "cat-misc", name: "Outros", slug: "outros", active: true },
 ];
 
@@ -107,6 +108,72 @@ export const products: ProductType[] = [
       { id: "carrier", label: "Transportadora", icon: "truck" },
     ],
   },
+  {
+    id: 105,
+    name: "JavaScript: O Guia Definitivo",
+    image:
+      "https://images.unsplash.com/photo-1687603917313-ccae1a289a9d?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8amF2YXNjcmlwdCUyMGNvZGV8ZW58MHx8MHx8fDA%3D",
+    price: 49.9,
+    rating: 4.7,
+    badgeIds: ["badge-new"],
+    categoryId: "cat-ebooks",
+    stock: 999,
+    tags: ["javascript", "programação", "desenvolvimento"],
+    paymentMethods: ["PIX", "Cartão"],
+    isDigital: true,
+    downloadUrl: "https://storage.vendify.com/ebooks/javascript-guia-definitivo.pdf",
+    fileSize: "12.5 MB",
+    fileFormat: "PDF",
+    pages: 854,
+    description: "O guia mais completo para aprender JavaScript do básico ao avançado.",
+    shippingOptions: [
+      { id: "digital", label: "Download imediato", icon: "download" },
+    ],
+  },
+  {
+    id: 106,
+    name: "Clean Code: Código Limpo",
+    image:
+      "https://images.squarespace-cdn.com/content/v1/63d40fe2cbd65e16cb8098b6/1678437282243-XL1EAF7FXW1KFY61HJ5V/why%2Blearn%2Bto%2Bcode.jpg",
+    price: 39.9,
+    rating: 4.9,
+    badgeIds: ["badge-bestseller"],
+    categoryId: "cat-ebooks",
+    stock: 999,
+    tags: ["clean code", "boas práticas", "programação"],
+    paymentMethods: ["PIX", "Cartão"],
+    isDigital: true,
+    downloadUrl: "https://storage.vendify.com/ebooks/clean-code.epub",
+    fileSize: "8.2 MB",
+    fileFormat: "PDF",
+    pages: 464,
+    description: "Aprenda a escrever código limpo seguindo as melhores práticas de programação.",
+    shippingOptions: [
+      { id: "digital", label: "Download imediato", icon: "download" },
+    ],
+  },
+  {
+    id: 107,
+    name: "React: Do Básico ao Avançado",
+    image:
+      "https://blog.fellyph.com.br/wp-content/uploads/2016/06/react-js.png",
+    price: 34.9,
+    rating: 4.6,
+    badgeIds: ["badge-promo"],
+    categoryId: "cat-ebooks",
+    stock: 999,
+    tags: ["react", "frontend", "javascript"],
+    paymentMethods: ["PIX", "Cartão"],
+    isDigital: true,
+    downloadUrl: "https://storage.vendify.com/ebooks/react-basico-avancado.pdf",
+    fileSize: "15.8 MB",
+    fileFormat: "PDF",
+    pages: 623,
+    description: "Domine React.js com exemplos práticos e projetos reais.",
+    shippingOptions: [
+      { id: "digital", label: "Download imediato", icon: "download" },
+    ],
+  },
 ];
 
 // ---------- Pedidos (ids dos itens == ids dos produtos acima) ----------
@@ -133,10 +200,12 @@ export const ordersMock: OrderType[] = [
     ],
     address: {
       name: "Letícia Andrade",
-      line1: "Rua das Flores, 123",
-      city: "Campina Grande",
-      state: "PB",
-      zip: "58400-000",
+      rua: "Rua das Flores",
+      numero: "123",
+      bairro: "Centro",
+      cidade: "Campina Grande",
+      estado: "PB",
+      cep: "58400-000",
     },
     payment: { method: "PIX" },
     shipment: { method: "Correios", tracking: "BR1234567890", etaDays: 5 },
@@ -144,6 +213,39 @@ export const ordersMock: OrderType[] = [
     shipping: 0,
     discount: 0,
     total: 488.5,
+  },
+  // Pedido com ebook para demonstração
+  {
+    id: "ebook-001",
+    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 dia atrás
+    status: "AVAILABLE",
+    items: [
+      {
+        id: 105, // JavaScript: O Guia Definitivo
+        name: "JavaScript: O Guia Definitivo",
+        image: products.find((p) => p.id === 105)!.image,
+        price: 49.9,
+        qty: 1,
+        isDigital: true,
+        downloadUrl: "https://storage.vendify.com/ebooks/javascript-guia-definitivo.pdf",
+        fileFormat: "PDF",
+      },
+    ],
+    address: {
+      name: "Letícia Andrade",
+      rua: "Rua das Flores",
+      numero: "123",
+      bairro: "Centro",
+      cidade: "Campina Grande",
+      estado: "PB",
+      cep: "58400-000",
+    },
+    payment: { method: "PIX" },
+    shipment: { method: "Digital", downloadAvailable: true },
+    subtotal: 49.9,
+    shipping: 0,
+    discount: 0,
+    total: 49.9,
   },
 ];
 

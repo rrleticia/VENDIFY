@@ -7,27 +7,32 @@ export type OrderStatusType =
   | "PICKING"
   | "SHIPPED"
   | "DELIVERED"
-  | "CANCELED";
+  | "CANCELED"
+  | "AVAILABLE";
 
 export type OrderItemType = {
-  id: number | string; // deve bater com Product.id
+  id: number | string; 
   name: string;
   image: string;
   price: number;
   qty: number;
+  isDigital?: boolean; 
+  downloadUrl?: string; 
+  fileFormat?: string;
 };
 
 export type PaymentType = { method: "PIX" | "CARD"; last4?: string };
 
 export type ShipmentType = {
-  method: "Correios" | "Transportadora" | "Retirada";
+  method: "Correios" | "Transportadora" | "Retirada" | "Digital";
   tracking?: string;
   etaDays?: number;
+  downloadAvailable?: boolean; 
 };
 
 export type OrderType = {
-  id: string; // ex.: #2025-0001
-  createdAt: string; // ISO
+  id: string;
+  createdAt: string;
   status: OrderStatusType;
   items: OrderItemType[];
   address: AddressType;

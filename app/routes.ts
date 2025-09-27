@@ -13,6 +13,7 @@ export default [
     route("product/:id", "./pages/client/ProductDetails.tsx"),
     route("cart", "./pages/client/CartPage.tsx"),
     route("orders", "./pages/client/OrdersPage.tsx"),
+    route("ebooks", "./pages/client/EbooksPage.tsx"),
     route("profile", "./pages/client/ProfilePage.tsx"),
     route("checkout", "./pages/client/CheckoutPage.tsx"),
     route("checkout/success", "./pages/client/CheckoutSuccessPage.tsx"),

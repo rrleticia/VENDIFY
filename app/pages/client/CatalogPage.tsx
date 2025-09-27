@@ -209,7 +209,13 @@ export default function CatalogPage() {
             }}
             variant={!active ? "filled" : "outlined"}
             clickable
-            size="small"
+            sx={{
+              mr: 0.5,
+              py: 1,           // ✅ Padding vertical maior
+              px: 1,           // ✅ Padding horizontal maior  
+              borderRadius: 2, // ✅ Bordas mais arredondadas
+              fontWeight: 600, // ✅ Fonte mais forte
+            }}
           />
 
           {/* CATEGORIAS */}
@@ -238,8 +244,13 @@ export default function CatalogPage() {
                 }
                 deleteIcon={selected ? <CloseIcon /> : undefined}
                 clickable
-                size="small"
-                sx={{ mr: 0.5 }}
+                sx={{ 
+                  mr: 0.5,
+                  py: 1,           // ✅ Padding vertical maior
+                  px: 1,           // ✅ Padding horizontal maior  
+                  borderRadius: 2, // ✅ Bordas mais arredondadas
+                  fontWeight: 600, // ✅ Fonte mais forte
+                }}
               />
             );
           })}
@@ -269,8 +280,13 @@ export default function CatalogPage() {
             }
             deleteIcon={isPromotion ? <CloseIcon /> : undefined}
             clickable
-            size="small"
-            sx={{ mr: 0.5 }}
+            sx={{ 
+              mr: 0.5,
+              py: 1,           // ✅ Padding vertical maior
+              px: 1,           // ✅ Padding horizontal maior  
+              borderRadius: 2, // ✅ Bordas mais arredondadas
+              fontWeight: 600, // ✅ Fonte mais forte
+            }}
           />
 
           <Box sx={{ flex: 1 }} />

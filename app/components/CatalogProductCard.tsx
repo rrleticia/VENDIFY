@@ -11,6 +11,8 @@ import {
   Stack,
 } from "@mui/material";
 import { Link } from "react-router";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 
 type Props = {
   product: ProductType;
@@ -54,8 +56,44 @@ export default function CartalogProductCard({ product, onAddToCart }: Props) {
           sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
           gutterBottom
         >
-          {product.category}
+          {product.categoryId}
         </Typography>
+
+        {/* Informações específicas para ebooks */}
+        {product.isDigital && (
+          <Stack direction="row" gap={1} sx={{ mb: 1 }}>
+            <Chip
+              icon={<MenuBookRoundedIcon fontSize="small" />}
+              label="E-book"
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+            {product.fileFormat && (
+              <Chip
+                label={product.fileFormat}
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Stack>
+        )}
+
+        {/* Informações adicionais para ebooks */}
+        {product.isDigital && (
+          <Stack direction="row" gap={1} sx={{ mb: 1 }}>
+            {product.pages && (
+              <Typography variant="caption" color="text.secondary">
+                {product.pages} páginas
+              </Typography>
+            )}
+            {product.fileSize && (
+              <Typography variant="caption" color="text.secondary">
+                • {product.fileSize}
+              </Typography>
+            )}
+          </Stack>
+        )}
 
         <Typography variant="h6" mt={1}>
           {product.price.toLocaleString("pt-BR", {
@@ -108,8 +146,9 @@ export default function CartalogProductCard({ product, onAddToCart }: Props) {
           fullWidth
           disableElevation
           sx={{ m: 0 }}
+          startIcon={product.isDigital ? <DownloadRoundedIcon /> : undefined}
         >
-          Comprar
+          {product.isDigital ? "Comprar E-book" : "Comprar"}
         </Button>
       </CardActions>
     </Card>

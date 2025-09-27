@@ -46,7 +46,6 @@ export const useAddressForm = (): FormHookType => {
     isDefault: "",
   });
 
-  // Handle input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
@@ -55,33 +54,30 @@ export const useAddressForm = (): FormHookType => {
       [name]: value,
     });
 
-    // Clear the error for the field being updated
     setErrors({
       ...errors,
       [name]: "",
     });
   };
 
-  // Validate form data and set errors if any
   const verifyErrors = () => {
     const { error } = Validators["AddressSchema"].validate(formData, {
-      abortEarly: false, // Collect all errors
+      abortEarly: false,
     });
     console.log(error);
 
     if (error) {
       const newErrors: Partial<Record<keyof IAddressHookJson, string>> = {};
       error.details.forEach((detail: any) => {
-        const field = detail.path[0] as keyof IAddressHookJson; // Explicitly type the field as keyof IOwnerJson
-        newErrors[field] = detail.message; // Assign error message to corresponding field
+        const field = detail.path[0] as keyof IAddressHookJson;
+        newErrors[field] = detail.message; 
       });
-      setErrors(newErrors); // Set all form errors
-      return false; // Return false if there are validation errors
+      setErrors(newErrors); 
+      return false; 
     } else {
-      // No errors, clear the errors
       setErrors({});
       console.log("Form data is valid. Ready for submission:", formData);
-      return true; // Return true if there are no validation errors
+      return true;
     }
   };
 

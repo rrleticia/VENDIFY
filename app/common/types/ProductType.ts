@@ -10,6 +10,11 @@ export type ProductType = {
   stock?: number;
   tags?: string[];
   description?: string;
-  paymentMethods?: string[]; // ["PIX", "Cartão"...]
+  paymentMethods?: string[];
   shippingOptions?: import("./ShippingType").ShippingOptionType[];
+  isDigital?: boolean;
+  downloadUrl?: string;
+  fileSize?: string; 
+  fileFormat?: string; 
+  pages?: number;
 };

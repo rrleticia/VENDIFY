@@ -8,6 +8,7 @@ const map: Record<string, Color> = {
   SHIPPED: "info",
   DELIVERED: "success",
   CANCELED: "error",
+  AVAILABLE: "success", // Para ebooks disponíveis para download
 };
 
 export default function OrderStatusChip({ value }: { value: string }){

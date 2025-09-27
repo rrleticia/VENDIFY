@@ -16,17 +16,16 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
-import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import PixRoundedIcon from "@mui/icons-material/PixRounded";
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import { useNavigate } from "react-router";
 import { useCart } from "@common/contexts";
+import FreteCalculator from "@components/FreteCalculator";
 
-type ShippingKind = "pickup" | "pac" | "sedex";
 type PaymentKind = "pix" | "card";
 
 function money(n: number) {
@@ -45,8 +44,14 @@ export default function CheckoutPage() {
   const [stateUF, setStateUF] = useState("PB");
 
   // entrega & pagamento
-  const [shipping, setShipping] = useState<ShippingKind>("pac");
   const [payment, setPayment] = useState<PaymentKind>("pix");
+  
+  // frete dinâmico
+  const [freteSelecionado, setFreteSelecionado] = useState<{
+    valor: number;
+    prazo: number;
+    nome: string;
+  } | null>(null);
 
   // cupom
   const [coupon, setCoupon] = useState("");
@@ -61,11 +66,21 @@ export default function CheckoutPage() {
 
   const items = estado.items;
 
+  // Verificar se o carrinho contém apenas ebooks/produtos digitais
+  const hasOnlyDigitalProducts = items.length > 0 && items.every(item => item.product.isDigital);
+  const hasPhysicalProducts = items.some(item => !item.product.isDigital);
+  const hasMixedProducts = items.some(item => item.product.isDigital) && hasPhysicalProducts;
+
   const shippingCost = useMemo(() => {
-    if (shipping === "pickup") return 0;
-    if (shipping === "pac") return subtotal > 200 ? 0 : 19.9;
-    return 34.9; // sedex
-  }, [shipping, subtotal]);
+    // Se só há produtos digitais, não há custo de entrega
+    if (hasOnlyDigitalProducts) return 0;
+    
+    // Se o frete foi calculado pelos Correios, usar esse valor
+    if (freteSelecionado) return freteSelecionado.valor;
+    
+    // Fallback para cálculo fixo se não houver frete selecionado
+    return 0;
+  }, [hasOnlyDigitalProducts, freteSelecionado]);
 
   const discount = useMemo(() => {
     if (!appliedCoupon) return 0;
@@ -95,10 +110,11 @@ export default function CheckoutPage() {
   }
 
   async function confirmOrder() {
-    if (!name || !cep || !street || !cidade || !stateUF) {
+    // Para produtos digitais, o endereço não é obrigatório
+    if (hasPhysicalProducts && (!name || !cep || !street || !cidade || !stateUF)) {
       setSnack({
         open: true,
-        msg: "Preencha o endereço completo.",
+        msg: "Preencha o endereço completo para produtos físicos.",
         sev: "error",
       });
       return;
@@ -110,7 +126,14 @@ export default function CheckoutPage() {
     await clear();
     navigate("/checkout/success", {
       replace: true,
-      estado: { total, payment, shipping, orderId: `#${Date.now()}` },
+      state: { 
+        total, 
+        payment, 
+        shipping: hasOnlyDigitalProducts ? "digital" : (freteSelecionado?.nome || "correios"), 
+        orderId: `#${Date.now()}`,
+        hasDigitalProducts: hasOnlyDigitalProducts || hasMixedProducts,
+        digitalItems: items.filter(item => item.product.isDigital)
+      },
     });
   }
 
@@ -141,111 +164,110 @@ export default function CheckoutPage() {
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 7 }}>
-          {/* Endereço */}
-          <Paper
-            variant="outlined"
-            sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
-          >
-            <Typography variant="subtitle1" fontWeight={800}>
-              Endereço de entrega
-            </Typography>
-            <Divider sx={{ my: 1.5 }} />
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Nome completo"
-                  fullWidth
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  label="CEP"
-                  fullWidth
-                  value={cep}
-                  onChange={(e) => setZip(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Endereço"
-                  fullWidth
-                  value={street}
-                  onChange={(e) => setStreet(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 8 }}>
-                <TextField
-                  label="Cidade"
-                  fullWidth
-                  value={cidade}
-                  onChange={(e) => setCity(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 4 }}>
-                <TextField
-                  label="UF"
-                  fullWidth
-                  value={stateUF}
-                  onChange={(e) => setStateUF(e.target.value.toUpperCase())}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Entrega */}
-          <Paper
-            variant="outlined"
-            sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
-          >
-            <Typography variant="subtitle1" fontWeight={800}>
-              Forma de entrega
-            </Typography>
-            <Divider sx={{ my: 1.5 }} />
-            <RadioGroup
-              value={shipping}
-              onChange={(_, v) => setShipping(v as ShippingKind)}
-              sx={{ "& .MuiFormControlLabel-root": { m: 0, mb: 1.25 } }}
+          {/* Endereço - só mostra se há produtos físicos */}
+          {hasPhysicalProducts && (
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
             >
-              <FormControlLabel
-                value="pickup"
-                control={<Radio />}
-                label={
-                  <Row
-                    icon={<StorefrontRoundedIcon />}
-                    title="Retirar na loja"
-                    subtitle="Pronto em até 2h"
-                    price="Grátis"
+              <Typography variant="subtitle1" fontWeight={800}>
+                Endereço de entrega
+              </Typography>
+              <Divider sx={{ my: 1.5 }} />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    label="Nome completo"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
-                }
-              />
-              <FormControlLabel
-                value="pac"
-                control={<Radio />}
-                label={
-                  <Row
-                    icon={<LocalShippingRoundedIcon />}
-                    title="Correios - PAC"
-                    subtitle="5–8 dias úteis"
-                    price={subtotal > 200 ? "Grátis" : money(19.9)}
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <TextField
+                    label="CEP"
+                    fullWidth
+                    value={cep}
+                    onChange={(e) => setZip(e.target.value)}
                   />
-                }
-              />
-              <FormControlLabel
-                value="sedex"
-                control={<Radio />}
-                label={
-                  <Row
-                    icon={<LocalShippingRoundedIcon />}
-                    title="Correios - SEDEX"
-                    subtitle="2–3 dias úteis"
-                    price={money(34.9)}
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    label="Endereço"
+                    fullWidth
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
                   />
+                </Grid>
+                <Grid size={{ xs: 8 }}>
+                  <TextField
+                    label="Cidade"
+                    fullWidth
+                    value={cidade}
+                    onChange={(e) => setCity(e.target.value)}
+                  />
+                </Grid>
+                <Grid size={{ xs: 4 }}>
+                  <TextField
+                    label="UF"
+                    fullWidth
+                    value={stateUF}
+                    onChange={(e) => setStateUF(e.target.value.toUpperCase())}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+          )}
+
+          {/* Entrega - Calculador de Frete */}
+          {!hasOnlyDigitalProducts && (
+            <FreteCalculator
+              temProdutosFisicos={!hasOnlyDigitalProducts}
+              onFreteSelect={setFreteSelecionado}
+              cepInicial={cep}
+              onEnderecoChange={(endereco) => {
+                if (endereco) {
+                  setStreet(endereco.logradouro || street);
+                  setCity(endereco.localidade || cidade);
+                  setStateUF(endereco.uf || stateUF);
                 }
-              />
-            </RadioGroup>
-          </Paper>
+              }}
+            />
+          )}
+
+          {/* Informação sobre produtos digitais */}
+          {hasOnlyDigitalProducts && (
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
+            >
+              <Typography variant="subtitle1" fontWeight={800}>
+                Entrega digital
+              </Typography>
+              <Divider sx={{ my: 1.5 }} />
+              <Stack direction="row" alignItems="center" gap={2}>
+                <DownloadRoundedIcon color="primary" />
+                <Box>
+                  <Typography variant="body2" fontWeight={700}>
+                    Download imediato
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Seus e-books ficarão disponíveis após confirmação do pagamento
+                  </Typography>
+                </Box>
+                <Typography variant="body2" color="success.main" fontWeight={700}>
+                  Grátis
+                </Typography>
+              </Stack>
+            </Paper>
+          )}
+
+          {/* Aviso para produtos mistos */}
+          {hasMixedProducts && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Seu carrinho contém produtos físicos e digitais. Os e-books estarão disponíveis imediatamente após o pagamento, enquanto os produtos físicos seguirão o prazo de entrega selecionado.
+            </Alert>
+          )}
 
           {/* Pagamento */}
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, width: 1 }}>

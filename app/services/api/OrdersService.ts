@@ -45,7 +45,7 @@ export async function cancelOrder(id: string): Promise<OrderType[]> {
   return DB;
 }
 
-export async function reorder(id: string): Promise<{ ok: true }> {
+export async function reorder(_id: string): Promise<{ ok: true }> {
   // opcional — no front a recomposição do carrinho já está garantida
   return { ok: true };
 }

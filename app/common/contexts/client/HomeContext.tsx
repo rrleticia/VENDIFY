@@ -7,24 +7,24 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type { Product } from "@common/types";
+import type { ProductType, CategoryType } from "@common/types";
 import {
   getHomeCollections,
   type HomeCollections,
 } from "@services/api/HomeService";
-import { useCart } from "@common/contexts"; // itens do carrinho, subtotal
-import { useOrders } from "@common/contexts"; // lista de pedidos (para último pedido)
-import { useProfile } from "@common/contexts"; // nome do usuário
+import { useCart } from "@common/contexts"; 
+import { useOrders } from "@common/contexts"; 
+import { useProfile } from "@common/contexts"; 
 
 type HomeState = {
   loading: boolean;
   banners: HomeCollections["banners"];
-  featured: Product[];
-  deals: Product[];
-  bestRated: Product[];
-  categories: string[];
+  featured: ProductType[];
+  deals: ProductType[];
+  bestRated: ProductType[];
+  categories: CategoryType[];
 
-  // Compostos de outros contextos:
+
   greetingName?: string;
   cartCount: number;
   cartSubtotal: number;
@@ -54,16 +54,14 @@ export function HomeProvider({ children }: { children: React.ReactNode }) {
     lastOrderTotal: undefined,
   });
 
-  // Consome o que já existe nos outros contextos
-  const { itemsCount, subtotal } = useCart(); // já exposto pelo CartContext :contentReference[oaicite:4]{index=4}
-  const { orders } = useOrders(); // já exposto pelo OrdersContext :contentReference[oaicite:5]{index=5}
-  const { store } = useProfile(); // já exposto pelo ProfileContext :contentReference[oaicite:6]{index=6}
+  const { itemsCount, subtotal } = useCart(); 
+  const { orders } = useOrders(); 
+  const { store } = useProfile();
 
   const load = useCallback(async () => {
     setState((s) => ({ ...s, loading: true }));
     try {
       const home = await getHomeCollections();
-      // último pedido por data
       const last = [...orders].sort(
         (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)
       )[0];

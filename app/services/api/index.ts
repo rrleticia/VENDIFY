@@ -3,6 +3,7 @@ export * as ProductService from "./ProductService";
 export * as CartService from "./CartService";
 export * as OrdersService from "./OrdersService";
 export * as ProfileService from "./ProfileService";
+export * as CorreiosService from "./CorreiosService";
 export * as AdminCatalogService from "./AdminCatalogService";
 export * as AdminOrdersService from "./AdminOrdersService";
 export * as AdminSecurityService from "./AdminSecurityService";

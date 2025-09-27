@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type { Order, OrderStatus } from "@common/types";
+import type { OrderType, OrderStatusType } from "@common/types";
 import { products } from "@common/mocks";
 import {
   listOrders,
@@ -18,13 +18,13 @@ import { useCart } from "@common/contexts/";
 
 type Filters = {
   text: string;
-  status: OrderStatus | "ALL";
+  status: OrderStatusType | "ALL";
   start: string;
   end: string;
 };
 
 interface OrdersCtx {
-  orders: Order[];
+  orders: OrderType[];
   loading: boolean;
   filters: Filters;
   setFilters: (f: Partial<Filters>) => void;
@@ -37,7 +37,7 @@ interface OrdersCtx {
 const Ctx = createContext<OrdersCtx | null>(null);
 
 export function OrdersProvider({ children }: { children: React.ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFiltersState] = useState<Filters>({
     text: "",
@@ -84,14 +84,12 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
       try {
         await svcReorder?.(orderId);
       } catch {
-        /* opcional */
       }
 
       const order = orders.find((o) => o.id === orderId);
       if (!order) return;
 
       for (const it of order.items ?? []) {
-        // tenta por id; se não, tenta por nome
         let prod = products.find(
           (p) => String(p.id) === String((it as any).productId ?? it.id)
         );
@@ -104,7 +102,7 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
             ) ||
             products.find((p) => String(p.name).toLowerCase().includes(name));
         }
-        if (!prod) continue; // evita linha órfã no hydrate do carrinho
+        if (!prod) continue; 
 
         const qty = Number(it.qty ?? 1);
         const virtualStock =

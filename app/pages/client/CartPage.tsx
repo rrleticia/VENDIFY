@@ -25,7 +25,7 @@ function calcShipping(subtotal: number) {
 }
 
 export default function CartPage() {
-  const { state, subtotal, setQty, remove, clear, itemsCount } = useCart();
+  const { estado, subtotal, setQty, remove, clear, itemsCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const [reorderId, setReorderId] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export default function CartPage() {
   const shipping = useMemo(() => calcShipping(subtotal), [subtotal]);
   const total = Math.max(0, subtotal) + shipping;
 
-  if (!state.items.length) {
+  if (!estado.items.length) {
     return (
       <Paper variant="outlined" sx={{ p: 3 }}>
         {reorderId && (
@@ -112,7 +112,7 @@ export default function CartPage() {
 
       <Stack direction={{ xs: "column", md: "row" }} gap={2}>
         <Paper variant="outlined" sx={{ p: 2, flex: 1, height: "min-content" }}>
-          {state.items.map((it, idx) => (
+          {estado.items.map((it, idx) => (
             <Box key={`${it.product.id}-${idx}`}>
               {idx > 0 && <Divider sx={{ my: 2 }} />}
               <Box display="flex" alignItems="center" gap={2}>
@@ -189,7 +189,7 @@ export default function CartPage() {
                   <Button
                     size="small"
                     color="error"
-                    onClick={() => void remove(it.product.id, it.meta)}
+                    onClick={() => void remove(it.product.id)}
                     startIcon={<DeleteIcon />}
                     sx={{ mt: 0.5 }}
                   >

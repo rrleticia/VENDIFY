@@ -32,7 +32,6 @@ declare module "@mui/material/Button" {
 
 // ---------- Design Tokens ----------
 const brand = {
-  // Adjust these 3 to rebrand quickly:
   primary: indigo,
   secondary: teal,
   neutral: blueGrey,
@@ -205,7 +204,6 @@ function getThemedComponents(mode: "light" | "dark"): ThemeOptions {
           },
         },
         variants: [
-          // Soft variant
           {
             props: { variant: "soft" as any },
             style: ({ theme }) => ({

@@ -24,6 +24,7 @@ type ProductLite = {
   image?: string;
   stock?: number;
   category?: string;
+  isDigital?: boolean;
 };
 
 export type CartResolvedItem = {
@@ -51,7 +52,7 @@ interface CartCtx {
     qty: number,
     meta?: LineMeta
   ) => Promise<void>;
-  remove: (productId: string | number, meta?: LineMeta) => Promise<void>;
+  remove: (productId: string | number) => Promise<void>;
   clear: () => Promise<void>;
   subtotal: number;
   itemsCount: number;
@@ -68,14 +69,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const resolved: CartResolvedItem[] = raw
       .map((l: CartLine) => {
         const p = products.find((pp) => String(pp.id) === String(l.id));
-        if (!p) return null; // se não achar no catálogo, não exibe
+        if (!p) return null;
         const product: ProductLite = {
           id: String(p.id),
           name: p.name,
           price: p.price,
           image: p.image,
           stock: p.stock,
-          category: p.category,
+          category: p.categoryId,
+          isDigital: p.isDigital,
         };
         return {
           product,
@@ -114,8 +116,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const remove = useCallback(
-    async (productId: string | number, meta?: LineMeta) => {
-      await svcRemove(productId, meta);
+    async (productId: string | number) => {
+      await svcRemove(productId);
       await hydrate();
     },
     [hydrate]
