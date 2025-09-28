@@ -1,68 +1,46 @@
-// src/services/api/OrdersService.ts
-import type { Order } from "./types";
-import { adminMocks, ordersMock } from "@common/mocks";
-import { toOrder } from "../func/adapters";
-import type { AdminOrder, AdminOrderStatus } from "@common/contexts";
+// src/services/api/HomeService.ts
+import { products, categories, badges } from "@common/mocks";
+import type { ProductType } from "@common/types";
 
-let DB: Order[] = ordersMock; // pode trocar por fetch no backend
+export type HomeCollections = {
+  banners: {
+    id: string;
+    title: string;
+    subtitle?: string;
+    image: string;
+    cta?: { label: string; to: string };
+  }[];
+  featured: ProductType[]; 
+  deals: ProductType[]; 
+  bestRated: ProductType[]; 
+  categories: import("@common/types").CategoryType[]; 
+};
 
-export async function listOrders(): Promise<Order[]> {
-  return DB;
-}
+export async function getHomeCollections(): Promise<HomeCollections> {
+  const banners = [
+    {
+      id: "bn-1",
+      title: "Linha Aurora",
+      subtitle: "Teclados mecânicos em oferta",
+      image:
+        "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1600&auto=format&fit=crop",
+      cta: { label: "Ver teclados", to: "/catalog?category=Teclados" },
+    },
+    {
+      id: "bn-2",
+      title: "Setup Gamer",
+      subtitle: "Mouses precisos para sua gameplay",
+      image:
+        "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=1600&auto=format&fit=crop",
+      cta: { label: "Ver mouses", to: "/catalog?categoryId=cat-mouses" },
+    },
+  ];
 
-export async function searchOrders(filters: {
-  text: string;
-  status: Order["status"] | "ALL";
-  start: string;
-  end: string;
-}): Promise<Order[]> {
-  // filtro simples, espelhando seu OrdersPage
-  const t = (filters.text || "").toLowerCase();
-  const start = filters.start
-    ? new Date(`${filters.start}T00:00:00`).getTime()
-    : null;
-  const end = filters.end
-    ? new Date(`${filters.end}T23:59:59`).getTime()
-    : null;
+  const featured = products.slice(0, 4);
+  const deals = products.filter(p => p.badgeIds?.includes(badges.find(b=>b.slug==="promo")!.id)).slice(0, 8);
+  const bestRated = [...products]
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, 8);
 
-  return DB.filter((o) => {
-    const matchText =
-      !t ||
-      o.id.toLowerCase().includes(t) ||
-      o.items.some((it) => it.name.toLowerCase().includes(t));
-    const matchStatus = filters.status === "ALL" || o.status === filters.status;
-    const time = new Date(o.createdAt).getTime();
-    const matchAfter = start == null || time >= start;
-    const matchBefore = end == null || time <= end;
-    return matchText && matchStatus && matchAfter && matchBefore;
-  });
-}
-
-export async function cancelOrder(id: string): Promise<Order[]> {
-  DB = DB.map((o) =>
-    o.id === id
-      ? { ...o, status: "CANCELED", canceledAt: new Date().toISOString() }
-      : o
-  );
-  return DB;
-}
-
-export async function reorder(id: string): Promise<{ ok: true }> {
-  // opcional — no front a recomposição do carrinho já está garantida
-  return { ok: true };
-}
-
-let ORDERS: AdminOrder[] = [...adminMocks.orders];
-
-export async function list(): Promise<AdminOrder[]> {
-  return new Promise((r) => setTimeout(() => r([...ORDERS]), 250));
-}
-
-export async function updateStatus(
-  id: string,
-  status: AdminOrderStatus
-): Promise<AdminOrder> {
-  ORDERS = ORDERS.map((o) => (o.id === id ? { ...o, status } : o));
-  const updated = ORDERS.find((o) => o.id === id)!;
-  return new Promise((r) => setTimeout(() => r(updated), 200));
+  return { banners, featured, deals, bestRated, categories };
 }

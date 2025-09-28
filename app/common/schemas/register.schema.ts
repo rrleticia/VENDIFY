@@ -15,7 +15,6 @@ export const RegisterSchema = Joi.object().keys({
     })
     .required(),
 
-  // ✅ Sem joi-phone-number; usando nosso validador custom
   phone: phoneBR({
     format: "international",
     requireAreaCode: true,

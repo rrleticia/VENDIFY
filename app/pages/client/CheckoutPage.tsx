@@ -1,4 +1,10 @@
 // src/routes/CheckoutPage.tsx
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+
+
+const stripePromise = loadStripe("pk_test_51S8ruPK5Bj6WctFELhsFKizat0yWqknDy36ox9Op8qyFPgmszYX8jA7Qnvb6nalH6mgDjwUthN4dGRGwp5r082yd00aUOTpb4L");
+
 import { useMemo, useState } from "react";
 import {
   Box,
@@ -15,58 +21,122 @@ import {
   Chip,
   Alert,
   Snackbar,
-  IconButton,
 } from "@mui/material";
-import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
-import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import PixRoundedIcon from "@mui/icons-material/PixRounded";
 import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
 import DiscountRoundedIcon from "@mui/icons-material/DiscountRounded";
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { useNavigate } from "react-router";
-import { useCart } from "../contexts/CartContext";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import { useLocation, useNavigate } from "react-router";
+import { useCart } from "@common/contexts";
+import FreteCalculator from "@components/FreteCalculator";
 
-type ShippingKind = "pickup" | "pac" | "sedex";
+
 type PaymentKind = "pix" | "card";
+
 
 function money(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-export default function CheckoutPage() {
+function CardPaymentForm({ total, onSuccess }: { total: number; onSuccess: () => void }) {
+  const stripe = useStripe();
+  const elements = useElements();
   const navigate = useNavigate();
-  const { state, subtotal, clear } = useCart();
 
-  // endereço
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    const res = await fetch("http://localhost:4242/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: total, method: "card" }),
+    });
+    const { client_secret } = await res.json();
+
+    const result = await stripe.confirmCardPayment(client_secret, {
+      payment_method: { card: elements.getElement(CardElement)! },
+    });
+
+    if (result.error) {
+      alert(result.error.message);
+    } 
+    else if (result.paymentIntent?.status === "succeeded") {
+    onSuccess();
+    navigate("/checkout/success", {
+      state: {
+        total,
+        payment: "card",
+        shipping: "correios",
+        orderId: `#${Date.now()}`,
+        hasDigitalProducts: false, 
+        digitalItems: [],
+      },
+      replace: true,
+    });
+  }
+
+  };
+
+  return (
+  <form onSubmit={handleSubmit}>
+    <CardElement
+      options={{
+        style: { base: { fontSize: "16px" } },
+        hidePostalCode: true
+      }}
+    />
+    <Button type="submit" fullWidth variant="contained" sx={{ mt: 2 }}>
+      Pagar com cartão
+    </Button>
+  </form>
+);
+}
+
+
+export default function CheckoutPage() {
+
+  const navigate = useNavigate();
+  const { estado, subtotal, clear } = useCart();
+
   const [name, setName] = useState("Letícia Andrade");
-  const [zip, setZip] = useState("58400-000");
+  const [cep, setZip] = useState("58400-000");
   const [street, setStreet] = useState("Rua das Flores, 123");
-  const [city, setCity] = useState("Campina Grande");
+  const [cidade, setCity] = useState("Campina Grande");
   const [stateUF, setStateUF] = useState("PB");
 
-  // entrega & pagamento
-  const [shipping, setShipping] = useState<ShippingKind>("pac");
   const [payment, setPayment] = useState<PaymentKind>("pix");
 
-  // cupom
+  const [freteSelecionado, setFreteSelecionado] = useState<{
+    valor: number;
+    prazo: number;
+    nome: string;
+  } | null>(null);
+
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
-  // feedback
   const [snack, setSnack] = useState<{
     open: boolean;
     msg: string;
     sev: "success" | "info" | "warning" | "error";
   }>({ open: false, msg: "", sev: "success" });
 
-  const items = state.items;
+  const items = estado.items;
+
+  const hasOnlyDigitalProducts = items.length > 0 && items.every(item => item.product.isDigital);
+  const hasPhysicalProducts = items.some(item => !item.product.isDigital);
+  const hasMixedProducts = items.some(item => item.product.isDigital) && hasPhysicalProducts;
 
   const shippingCost = useMemo(() => {
-    if (shipping === "pickup") return 0;
-    if (shipping === "pac") return subtotal > 200 ? 0 : 19.9;
-    return 34.9; // sedex
-  }, [shipping, subtotal]);
+    if (hasOnlyDigitalProducts) return 0;
+
+    if (freteSelecionado) return freteSelecionado.valor;
+
+    return 0;
+  }, [hasOnlyDigitalProducts, freteSelecionado]);
 
   const discount = useMemo(() => {
     if (!appliedCoupon) return 0;
@@ -96,10 +166,10 @@ export default function CheckoutPage() {
   }
 
   async function confirmOrder() {
-    if (!name || !zip || !street || !city || !stateUF) {
+    if (hasPhysicalProducts && (!name || !cep || !street || !cidade || !stateUF)) {
       setSnack({
         open: true,
-        msg: "Preencha o endereço completo.",
+        msg: "Preencha o endereço completo para produtos físicos.",
         sev: "error",
       });
       return;
@@ -111,7 +181,14 @@ export default function CheckoutPage() {
     await clear();
     navigate("/checkout/success", {
       replace: true,
-      state: { total, payment, shipping, orderId: `#${Date.now()}` },
+      state: { 
+        total, 
+        payment, 
+        shipping: hasOnlyDigitalProducts ? "digital" : (freteSelecionado?.nome || "correios"), 
+        orderId: `#${Date.now()}`,
+        hasDigitalProducts: hasOnlyDigitalProducts || hasMixedProducts,
+        digitalItems: items.filter(item => item.product.isDigital)
+      },
     });
   }
 
@@ -129,7 +206,7 @@ export default function CheckoutPage() {
           <Typography
             variant="body2"
             sx={{ cursor: "pointer" }}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/catalog", { replace: true })}
           >
             Voltar
           </Typography>
@@ -142,111 +219,110 @@ export default function CheckoutPage() {
 
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 7 }}>
-          {/* Endereço */}
-          <Paper
-            variant="outlined"
-            sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
-          >
-            <Typography variant="subtitle1" fontWeight={800}>
-              Endereço de entrega
-            </Typography>
-            <Divider sx={{ my: 1.5 }} />
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Nome completo"
-                  fullWidth
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 6 }}>
-                <TextField
-                  label="CEP"
-                  fullWidth
-                  value={zip}
-                  onChange={(e) => setZip(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Endereço"
-                  fullWidth
-                  value={street}
-                  onChange={(e) => setStreet(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 8 }}>
-                <TextField
-                  label="Cidade"
-                  fullWidth
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                />
-              </Grid>
-              <Grid size={{ xs: 4 }}>
-                <TextField
-                  label="UF"
-                  fullWidth
-                  value={stateUF}
-                  onChange={(e) => setStateUF(e.target.value.toUpperCase())}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Entrega */}
-          <Paper
-            variant="outlined"
-            sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
-          >
-            <Typography variant="subtitle1" fontWeight={800}>
-              Forma de entrega
-            </Typography>
-            <Divider sx={{ my: 1.5 }} />
-            <RadioGroup
-              value={shipping}
-              onChange={(_, v) => setShipping(v as ShippingKind)}
-              sx={{ "& .MuiFormControlLabel-root": { m: 0, mb: 1.25 } }}
+          {/* Endereço - só mostra se há produtos físicos */}
+          {hasPhysicalProducts && (
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
             >
-              <FormControlLabel
-                value="pickup"
-                control={<Radio />}
-                label={
-                  <Row
-                    icon={<StorefrontRoundedIcon />}
-                    title="Retirar na loja"
-                    subtitle="Pronto em até 2h"
-                    price="Grátis"
+              <Typography variant="subtitle1" fontWeight={800}>
+                Endereço de entrega
+              </Typography>
+              <Divider sx={{ my: 1.5 }} />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    label="Nome completo"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
-                }
-              />
-              <FormControlLabel
-                value="pac"
-                control={<Radio />}
-                label={
-                  <Row
-                    icon={<LocalShippingRoundedIcon />}
-                    title="Correios - PAC"
-                    subtitle="5–8 dias úteis"
-                    price={subtotal > 200 ? "Grátis" : money(19.9)}
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <TextField
+                    label="CEP"
+                    fullWidth
+                    value={cep}
+                    onChange={(e) => setZip(e.target.value)}
                   />
-                }
-              />
-              <FormControlLabel
-                value="sedex"
-                control={<Radio />}
-                label={
-                  <Row
-                    icon={<LocalShippingRoundedIcon />}
-                    title="Correios - SEDEX"
-                    subtitle="2–3 dias úteis"
-                    price={money(34.9)}
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    label="Endereço"
+                    fullWidth
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
                   />
+                </Grid>
+                <Grid size={{ xs: 8 }}>
+                  <TextField
+                    label="Cidade"
+                    fullWidth
+                    value={cidade}
+                    onChange={(e) => setCity(e.target.value)}
+                  />
+                </Grid>
+                <Grid size={{ xs: 4 }}>
+                  <TextField
+                    label="UF"
+                    fullWidth
+                    value={stateUF}
+                    onChange={(e) => setStateUF(e.target.value.toUpperCase())}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+          )}
+
+          {/* Entrega - Calculador de Frete */}
+          {!hasOnlyDigitalProducts && (
+            <FreteCalculator
+              temProdutosFisicos={!hasOnlyDigitalProducts}
+              onFreteSelect={setFreteSelecionado}
+              cepInicial={cep}
+              onEnderecoChange={(endereco) => {
+                if (endereco) {
+                  setStreet(endereco.logradouro || street);
+                  setCity(endereco.localidade || cidade);
+                  setStateUF(endereco.uf || stateUF);
                 }
-              />
-            </RadioGroup>
-          </Paper>
+              }}
+            />
+          )}
+
+          {/* Informação sobre produtos digitais */}
+          {hasOnlyDigitalProducts && (
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}
+            >
+              <Typography variant="subtitle1" fontWeight={800}>
+                Entrega digital
+              </Typography>
+              <Divider sx={{ my: 1.5 }} />
+              <Stack direction="row" alignItems="center" gap={2}>
+                <DownloadRoundedIcon color="primary" />
+                <Box>
+                  <Typography variant="body2" fontWeight={700}>
+                    Download imediato
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Seus e-books ficarão disponíveis após confirmação do pagamento
+                  </Typography>
+                </Box>
+                <Typography variant="body2" color="success.main" fontWeight={700}>
+                  Grátis
+                </Typography>
+              </Stack>
+            </Paper>
+          )}
+
+          {/* Aviso para produtos mistos */}
+          {hasMixedProducts && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Seu carrinho contém produtos físicos e digitais. Os e-books estarão disponíveis imediatamente após o pagamento, enquanto os produtos físicos seguirão o prazo de entrega selecionado.
+            </Alert>
+          )}
 
           {/* Pagamento */}
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, width: 1 }}>
@@ -286,17 +362,12 @@ export default function CheckoutPage() {
                 O QR Code será exibido após confirmar o pedido.
               </Alert>
             ) : (
-              <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                <Grid size={{ xs: 12, md: 8 }}>
-                  <TextField label="Número do cartão (mock)" fullWidth />
-                </Grid>
-                <Grid size={{ xs: 6, md: 2 }}>
-                  <TextField label="Validade" placeholder="MM/AA" fullWidth />
-                </Grid>
-                <Grid size={{ xs: 6, md: 2 }}>
-                  <TextField label="CVV" fullWidth />
-                </Grid>
-              </Grid>
+              <Elements stripe={stripePromise}>
+                <CardPaymentForm 
+                  total={total} 
+                  onSuccess={async () => await clear()} 
+                />
+              </Elements>
             )}
           </Paper>
         </Grid>

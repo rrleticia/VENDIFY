@@ -19,11 +19,12 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useMemo, useState } from "react";
-import ProductCard from "../../components/Pages/ProductCard";
-import { categories, products } from "@common/mocks/mocks";
+import ProductCard from "../../components/CatalogProductCard";
+import { categories, products, badges } from "@common/mocks";
 import { useSearchParams } from "react-router";
 import { useCart } from "@common/contexts/"; // <<< integração
-import type { Product } from "@common/types";
+import type { ProductType } from "@common/types";
+import { resolveCategoryParam, matchesQuery } from "@common/util/query.util";
 
 type SortKey = "relevance" | "price_asc" | "price_desc";
 
@@ -31,32 +32,6 @@ interface IOrderFilterProps {
   showSort: boolean;
   sort: SortKey;
   setSort: (sort: SortKey) => void;
-}
-
-function normalize(s: string) {
-  return s
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-}
-
-function matchesQuery(p: Product, q: string) {
-  if (!q) return true;
-  const nq = normalize(q);
-  const fields = [
-    p.name,
-    p.category,
-    (p as any).brand,
-    (p.tags ?? []).join(" "),
-  ].filter(Boolean) as string[];
-  return fields.some((f) => normalize(f).includes(nq));
-}
-
-function resolveCategoryParam(paramValue: string | null): string | null {
-  if (!paramValue) return null;
-  const wanted = normalize(paramValue.trim());
-  const found = categories.find((cat) => normalize(cat) === wanted);
-  return found ?? null;
 }
 
 function OrderFilter({ showSort, sort, setSort }: IOrderFilterProps) {
@@ -88,37 +63,32 @@ export default function CatalogPage() {
 
   const [params, setParams] = useSearchParams();
   const q = (params.get("name") ?? "").trim();
-  const cParam = params.get("category");
+  const cParam = params.get("categoryId");
   const isPromotion = params.get("promotion") === "true";
 
-  // Barra de busca: visibilidade + valor local (sem form/submit)
   const [showSearch, setShowSearch] = useState<boolean>(!!q);
   const [searchInput, setSearchInput] = useState<string>(q);
 
-  // Integração carrinho
   const { addToCart } = useCart();
-  const handleAdd = (product: Product) => {
-    void addToCart(product.id, 1); // no catálogo não há CEP/método ainda
+  const handleAdd = (product: ProductType) => {
+    void addToCart(product.id, 1);
   };
 
-  // URL -> estado (categoria)
   useEffect(() => {
     const resolved = resolveCategoryParam(cParam);
     setActive((prev) => (prev === resolved ? prev : resolved));
   }, [cParam]);
 
-  // Sincroniza o texto do input quando ?name muda via chips/botões
   useEffect(() => {
     setSearchInput(q);
     if (q && !showSearch) setShowSearch(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  // helpers: mexer na URL (sem submit)
   const setCategoryParam = (cat: string | null) => {
     const next = new URLSearchParams(params);
-    if (!cat) next.delete("category");
-    else next.set("category", cat);
+    if (!cat) next.delete("categoryId");
+    else next.set("categoryId", cat);
     setParams(next, { replace: true });
   };
 
@@ -136,32 +106,35 @@ export default function CatalogPage() {
     setParams(next, { replace: true });
   };
 
-  // 1) filtro por busca
   const filteredByQuery = useMemo(() => {
-    return products.filter((p) => {
-      const match = matchesQuery(p as Product, q);
-      const promoMatch = !isPromotion || (p as Product).isPromo === true;
+    return products.filter((product: ProductType) => {
+      const match = matchesQuery(product, q, isPromotion);
+      const promoId = badges.find((b) => b.slug === "promo")?.id;
+      const promoMatch =
+        !isPromotion ||
+        (promoId ? (product.badgeIds ?? []).includes(promoId) : false);
       return match && promoMatch;
     });
   }, [q, isPromotion]);
 
-  // 2) contadores por categoria baseados na busca
   const countsByCategory = useMemo(() => {
     const map = new Map<string, number>();
+    console.log("filteredByQuery", filteredByQuery);
     for (const p of filteredByQuery) {
+      console.log(p);
       map.set(
-        (p as Product).category,
-        (map.get((p as Product).category) ?? 0) + 1
+        (p as ProductType).categoryId,
+        (map.get((p as ProductType).categoryId) ?? 0) + 1
       );
     }
+    console.log(map);
     return map;
   }, [filteredByQuery]);
 
-  // 3) aplica categoria + sort
   const filtered = useMemo(() => {
     let arr = filteredByQuery.filter(
-      (p) => !active || (p as Product).category === active
-    ) as Product[];
+      (p) => !active || (p as ProductType).categoryId === active
+    ) as ProductType[];
     if (sort === "price_asc") arr = [...arr].sort((a, b) => a.price - b.price);
     if (sort === "price_desc") arr = [...arr].sort((a, b) => b.price - a.price);
     return arr;
@@ -228,24 +201,30 @@ export default function CatalogPage() {
             }}
             variant={!active ? "filled" : "outlined"}
             clickable
-            size="small"
+            sx={{
+              mr: 0.5,
+              py: 1,          
+              px: 1,          
+              borderRadius: 2, 
+              fontWeight: 600, 
+            }}
           />
 
           {/* CATEGORIAS */}
           {categories.map((c) => {
-            const selected = active === c;
-            const count = countsByCategory.get(c) ?? 0;
+            const selected = active === c.id;
+            const count = countsByCategory.get(c.id) ?? 0;
             return (
               <Chip
-                key={c}
+                key={c.id}
                 component="button"
                 type="button"
-                label={`${c} (${count})`}
+                label={`${c.name} (${count})`}
                 color={selected ? "primary" : "default"}
                 variant={selected ? "filled" : "outlined"}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
-                  setCategoryParam(c);
+                  setCategoryParam(c.id);
                 }}
                 onDelete={
                   selected
@@ -257,8 +236,13 @@ export default function CatalogPage() {
                 }
                 deleteIcon={selected ? <CloseIcon /> : undefined}
                 clickable
-                size="small"
-                sx={{ mr: 0.5 }}
+                sx={{ 
+                  mr: 0.5,
+                  py: 1,          
+                  px: 1,           
+                  borderRadius: 2, 
+                  fontWeight: 600, 
+                }}
               />
             );
           })}
@@ -288,8 +272,13 @@ export default function CatalogPage() {
             }
             deleteIcon={isPromotion ? <CloseIcon /> : undefined}
             clickable
-            size="small"
-            sx={{ mr: 0.5 }}
+            sx={{ 
+              mr: 0.5,
+              py: 1,           
+              px: 1,          
+              borderRadius: 2, 
+              fontWeight: 600, 
+            }}
           />
 
           <Box sx={{ flex: 1 }} />
@@ -380,12 +369,11 @@ export default function CatalogPage() {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {filtered.map((product: Product) => (
+          {filtered.map((product: ProductType) => (
             <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <ProductCard
                 product={product}
-                // seu card já exibe tags abaixo por padrão; se tiver prop, mantenha
-                onAddToCart={() => handleAdd(product)} // <<< integração
+                onAddToCart={() => handleAdd(product)} 
               />
             </Grid>
           ))}

@@ -10,16 +10,26 @@ import {
 import { Link, NavLink } from "react-router";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import { useAuthContext, useCart } from "@common/contexts/";
 
 function UserButton() {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, logout } = useAuthContext();
 
   if (isAuthenticated) {
     return (
-      <Button component={NavLink} to="/profile" color="inherit">
-        Perfil
-      </Button>
+      <>
+        <Button component={NavLink} to="/orders" color="inherit">
+          Pedidos
+        </Button>
+        <Button component={NavLink} to="/ebooks" color="inherit" startIcon={<MenuBookRoundedIcon />}>
+          E-books
+        </Button>
+        <Button component={NavLink} to="/profile" color="inherit">
+          Perfil
+        </Button>
+        <Button onClick={() => logout()}>Sair</Button>
+      </>
     );
   } else {
     return (
@@ -62,9 +72,6 @@ export default function AppHeader({}) {
         <Stack direction="row" sx={{ flex: 1, justifyContent: "end" }}>
           <Button component={NavLink} to="/catalog" color="inherit">
             Catálogo
-          </Button>
-          <Button component={NavLink} to="/orders" color="inherit">
-            Pedidos
           </Button>
 
           <UserButton></UserButton>

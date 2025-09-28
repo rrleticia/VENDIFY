@@ -1,17 +1,29 @@
-import type { AdminRole, AdminUser } from "@common/contexts";
+// app/services/api/AdminAuthService.ts
+import { saveJSON, loadJSON, STORAGE_KEYS } from "@services/helpers/storage";
 
-export function mockUser(role: AdminRole): AdminUser {
-  return { id: "u-1", name: "Admin BUYLY", email: "admin@buyly.io", role };
+type AuthState = { userId: string; email: string; name: string } | null;
+
+const KEY = "buyly.admin.auth";
+
+export function getAuth(): AuthState {
+  return loadJSON<AuthState>(KEY, null);
 }
 
-export function getCurrentUser(): AdminUser {
-  return mockUser("admin");
+export function isAuthenticated(): boolean {
+  return !!getAuth();
 }
 
-export async function signInAs(role: AdminRole): Promise<AdminUser> {
-  return new Promise((r) => setTimeout(() => r(mockUser(role)), 250));
+export function login(email: string, password: string): { ok: boolean; message?: string } {
+  if (email === "admin@gmail.com" && password === "admin") {
+    const state: AuthState = { userId: "u-admin", email, name: "Admin Root" };
+    saveJSON(KEY, state);
+    return { ok: true };
+  }
+  return { ok: false, message: "Credenciais inválidas" };
 }
 
-export async function signOut() {
-  /* clear tokens if needed */
+export function logout(): void {
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(KEY);
+  }
 }

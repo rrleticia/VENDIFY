@@ -13,22 +13,28 @@ export default [
     route("product/:id", "./pages/client/ProductDetails.tsx"),
     route("cart", "./pages/client/CartPage.tsx"),
     route("orders", "./pages/client/OrdersPage.tsx"),
+    route("ebooks", "./pages/client/EbooksPage.tsx"),
     route("profile", "./pages/client/ProfilePage.tsx"),
     route("checkout", "./pages/client/CheckoutPage.tsx"),
     route("checkout/success", "./pages/client/CheckoutSuccessPage.tsx"),
+    route("pix/qr", "./pages/client/PixQRCodePage.tsx"),
   ]),
 
-  layout("./pages/auth/AuthLayout.tsx", [
-    route("login", "./pages/auth/LoginPage.tsx"),
-    route("register", "./pages/auth/RegisterPage.tsx"),
+  layout("./pages/client/AuthLayout.tsx", [
+    route("login", "./pages/client/LoginPage.tsx"),
+    route("register", "./pages/client/RegisterPage.tsx"),
   ]),
 
   layout("./pages/admin/AdminLayout.tsx", [
-    route("admin/dashboard", "./pages/admin/AdminDashboardPage.tsx"),
-    route("admin/products", "./pages/admin/CatalogPage.tsx"),
-    route("admin/customer-orders", "./pages/admin/OrdersPage.tsx"),
-    route("admin/customers", "./pages/admin/CustomersPage.tsx"),
-    route("admin/config", "./pages/admin/SettingsPage.tsx"),
+    route("admin/", "./pages/auxiliar/RedirectAdminPage.tsx"),
+    route("admin/dashboard", "./pages/admin/DashboardAdminPage.tsx"),
+    route("admin/login", "./pages/admin/AdminLoginPage.tsx"),
+    route("admin/catalog", "./pages/admin/CatalogAdminPage.tsx"),
+    route("admin/categories", "./pages/admin/CategoriesAdminPage.tsx"),
+    route("admin/orders", "./pages/admin/OrdersAdminPage.tsx"),
+    route("admin/logs", "./pages/admin/LogsAdminPage.tsx"),
+    route("admin/security", "./pages/admin/SecurityAdminPage.tsx"),
+    route("admin/users", "./pages/admin/UsersAdminPage.tsx"),
   ]),
 
   route("*", "./pages/auxiliar/NotFoundPage.tsx"),

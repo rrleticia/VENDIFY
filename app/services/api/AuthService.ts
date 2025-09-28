@@ -1,55 +1,27 @@
 // src/services/api/AuthService.ts
-import { API_URL } from "../func/config";
-
-export async function signIn(_email: string, _password: string) {
-  // mock simples
-  return { ok: true, token: "mock-token" };
-}
-
-export async function signOut() {
-  return { ok: true };
-}
-export async function me() {
-  return { name: "Letícia Andrade", email: "leticia@example.com" };
-}
-
-export interface ILoginInterface {
-  email: string;
-  password: string;
-}
+import { loadJSON, saveJSON, STORAGE_KEYS } from "@services/helpers/storage";
+import type { UserType } from "@common/types/UserType";
 
 export interface IRegisterInterface {
-  email: string;
-  password: string;
   name: string;
+  email: string;
   phone: string;
-  acceptUpdates: boolean;
+  password: string;
+  acceptUpdates?: boolean;
 }
 
-export async function login(email: string, password: string) {
-  return {
-    token: "TOKEN_123",
-    user: {
-      name: "Leticia",
-      email: "leticia@gmail.com",
-      phone: "+55839999999999",
-      cpf: "99999999999",
-      birthdate: "21/09/1001",
-    },
-  };
+type StoredUser = UserType & { password: string };
 
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  console.log(response);
+function getUsers(): StoredUser[] {
+  return loadJSON<StoredUser[]>(STORAGE_KEYS.users, []);
+}
 
-  if (!response.ok) {
-    throw new Error("Falha no login");
-  }
+function setUsers(list: StoredUser[]) {
+  saveJSON(STORAGE_KEYS.users, list);
+}
 
-  return response.json();
+function makeToken(): string {
+  return Math.random().toString(36).slice(2) + "." + Math.random().toString(36).slice(2);
 }
 
 export async function register(
@@ -57,28 +29,58 @@ export async function register(
   password: string,
   name: string,
   phone: string,
-  acceptUpdates: boolean
+  acceptUpdates?: boolean
 ) {
-  return {
-    token: "TOKEN_123",
-    user: {
-      name: "Leticia",
-      email: "leticia@gmail.com",
-      phone: "+55839999999999",
-      cpf: "99999999999",
-      birthdate: "21/09/1001",
-    },
-  };
-
-  const response = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, name, phone, acceptUpdates }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Falha no cadastro");
+  const users = getUsers();
+  const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase());
+  if (exists) {
+    throw new Error("E-mail já cadastrado.");
   }
+  const newUser: StoredUser = {
+    name,
+    email,
+    phone,
+    password,
+    cpf: "",
+    birth: "",
+    avatar: undefined,
+    newsletter: !!acceptUpdates,
+    twoFA: false,
+    marketingPush: !!acceptUpdates,
+    marketingEmail: !!acceptUpdates,
+  };
+  users.push(newUser);
+  setUsers(users);
 
-  return response.json(); // Retorna confirmação ou token
+  // login automático após cadastro
+  const token = makeToken();
+  return {
+    ok: true,
+    token,
+    user: { ...newUser, password: undefined as any } as UserType,
+  };
 }
+
+export async function signIn(email: string, password: string) {
+  const users = getUsers();
+  const found = users.find(
+    (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+  );
+  if (!found) {
+    throw new Error("Credenciais inválidas.");
+  }
+  const token = makeToken();
+  const { password: _pwd, ...safe } = found;
+  return { ok: true, token, user: safe as UserType };
+}
+
+export async function signOut() {
+  return { ok: true };
+}
+
+export async function me() {
+  // Em um backend real, leria do token. Aqui, retornamos um mock simples.
+  return { name: "Usuário", email: "user@example.com" };
+}
+
+export const login = signIn;

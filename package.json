@@ -7,21 +7,27 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
+    
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
-    "@mui/x-data-grid": "^8.11.3",
     "@react-router/node": "^7.7.1",
     "@react-router/serve": "^7.7.1",
+    "@stripe/react-stripe-js": "^4.0.2",
+    "@stripe/stripe-js": "^7.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
     "isbot": "^5.1.27",
     "joi": "^18.0.1",
     "joi-password": "^4.2.0",
+    "lucide-react": "^0.544.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router": "^7.7.1"
+    "react-router": "^7.7.1",
+    "stripe": "^18.5.0"
   },
   "devDependencies": {
     "@react-router/dev": "^7.7.1",
@@ -29,6 +35,7 @@
     "@types/node": "^20",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "concurrently": "^9.2.1",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
     "vite-tsconfig-paths": "^5.1.4"

@@ -1,4 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { useAuthContext } from "@common/contexts";
+import { useUserContext } from "@common/contexts/app/UserContext";
 import {
   Box,
   Container,
@@ -55,19 +57,19 @@ const MOCK_ADDRESSES: Address[] = [
   {
     id: "addr-1",
     label: "Casa",
-    line1: "Rua das Flores, 123",
-    city: "Campina Grande",
-    state: "PB",
-    zip: "58400-000",
+    rua: "Rua das Flores, 123",
+    cidade: "Campina Grande",
+    estado: "PB",
+    cep: "58400-000",
     isDefault: true,
   },
   {
     id: "addr-2",
     label: "Trabalho",
-    line1: "Av. Principal, 456 - Sala 201",
-    city: "João Pessoa",
-    state: "PB",
-    zip: "58000-000",
+    rua: "Av. Principal, 456 - Sala 201",
+    cidade: "João Pessoa",
+    estado: "PB",
+    cep: "58000-000",
   },
 ];
 
@@ -97,37 +99,33 @@ function maskCard(c: Card) {
 
 // ---------------- Page ----------------
 export default function ProfilePage() {
-  // user
-  const [user, setUser] = useState<User>(MOCK_USER);
+  const { user: currentUser } = useUserContext();
+  const { logout } = useAuthContext();
+  useEffect(() => { if (currentUser) setUser(currentUser as User); }, [currentUser]);
+  const [user, setUser] = useState<User>(currentUser ?? MOCK_USER);
   const [savingUser, setSavingUser] = useState(false);
 
-  // avatar
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
     user.avatar
   );
 
-  // addresses
   const [addresses, setAddresses] = useState<Address[]>(MOCK_ADDRESSES);
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
-  // cards
   const [cards, setCards] = useState<Card[]>(MOCK_CARDS);
   const [cardDialogOpen, setCardDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
 
-  // password & privacy
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
 
-  // notifications
-  const ordersCount = 12; // mock
-  const points = 380; // mock
-  const coupons = 2; // mock
+  const ordersCount = 12; 
+  const points = 380;
+  const coupons = 2; 
 
-  // feedback
   const [snack, setSnack] = useState<{
     open: boolean;
     msg: string;
@@ -138,7 +136,6 @@ export default function ProfilePage() {
     severity: "success",
   });
 
-  // handlers - user
   const onSaveUser = () => {
     setSavingUser(true);
     setTimeout(() => {
@@ -168,15 +165,14 @@ export default function ProfilePage() {
     reader.readAsDataURL(f);
   };
 
-  // handlers - address
   const openNewAddress = () => {
     setEditingAddress({
       id: `addr-${Date.now()}`,
       label: "Novo",
-      line1: "",
-      city: "",
-      state: "PB",
-      zip: "",
+      rua: "",
+      cidade: "",
+      estado: "PB",
+      cep: "",
     });
     setAddressDialogOpen(true);
   };
@@ -207,7 +203,6 @@ export default function ProfilePage() {
     setSnack({ open: true, msg: "Endereço removido.", severity: "warning" });
   };
 
-  // handlers - cards
   const openNewCard = () => {
     setEditingCard({
       id: `card-${Date.now()}`,
@@ -253,7 +248,6 @@ export default function ProfilePage() {
     setSnack({ open: true, msg: "Cartão removido.", severity: "warning" });
   };
 
-  // handlers - password
   const changePassword = () => {
     if (!oldPass || newPass.length < 6 || newPass !== confirmPass) {
       setSnack({
@@ -273,7 +267,6 @@ export default function ProfilePage() {
     });
   };
 
-  // handlers - danger zone
   const deleteAccount = () => {
     setSnack({
       open: true,
@@ -283,7 +276,6 @@ export default function ProfilePage() {
   };
 
   return (
-    // >>> Ajuste principal: ocupar toda a largura do layout, sem "max-content"
     <Container maxWidth="lg" sx={{ py: 3, width: 1 }}>
       {/* Header */}
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, mb: 2, width: 1 }}>
@@ -341,7 +333,7 @@ export default function ProfilePage() {
             <Button component={RouterLink} to="/orders">
               Meus pedidos
             </Button>
-            <Button color="inherit" startIcon={<LogoutRoundedIcon />}>
+            <Button color="inherit" startIcon={<LogoutRoundedIcon />} onClick={logout}>
               Sair
             </Button>
           </Stack>
@@ -448,9 +440,9 @@ export default function ProfilePage() {
                         {a.label} {a.isDefault ? "• padrão" : ""}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {a.line1}
-                        {a.line2 ? `, ${a.line2}` : ""} — {a.city}/{a.state} •{" "}
-                        {a.zip}
+                        {a.rua}
+                        {a.complemento ? `, ${a.complemento}` : ""} — {a.cidade}/{a.estado} •{" "}
+                        {a.cep}
                       </Typography>
                     </Stack>
                     <Stack direction="row" gap={1} flexWrap="wrap">
@@ -712,22 +704,22 @@ export default function ProfilePage() {
               />
               <TextField
                 label="Linha 1"
-                value={editingAddress.line1}
+                value={editingAddress.rua}
                 onChange={(e) =>
                   setEditingAddress({
                     ...editingAddress,
-                    line1: e.target.value,
+                    rua: e.target.value,
                   })
                 }
                 fullWidth
               />
               <TextField
                 label="Linha 2"
-                value={editingAddress.line2 ?? ""}
+                value={editingAddress.complemento ?? ""}
                 onChange={(e) =>
                   setEditingAddress({
                     ...editingAddress,
-                    line2: e.target.value,
+                    complemento: e.target.value,
                   })
                 }
                 fullWidth
@@ -737,11 +729,11 @@ export default function ProfilePage() {
                   <TextField
                     label="Cidade"
                     fullWidth
-                    value={editingAddress.city}
+                    value={editingAddress.cidade}
                     onChange={(e) =>
                       setEditingAddress({
                         ...editingAddress,
-                        city: e.target.value,
+                        cidade: e.target.value,
                       })
                     }
                   />
@@ -750,11 +742,11 @@ export default function ProfilePage() {
                   <TextField
                     label="UF"
                     fullWidth
-                    value={editingAddress.state}
+                    value={editingAddress.estado}
                     onChange={(e) =>
                       setEditingAddress({
                         ...editingAddress,
-                        state: e.target.value,
+                        estado: e.target.value,
                       })
                     }
                   />
@@ -763,11 +755,11 @@ export default function ProfilePage() {
                   <TextField
                     label="CEP"
                     fullWidth
-                    value={editingAddress.zip}
+                    value={editingAddress.cep}
                     onChange={(e) =>
                       setEditingAddress({
                         ...editingAddress,
-                        zip: e.target.value,
+                        cep: e.target.value,
                       })
                     }
                   />

@@ -1,9 +1,14 @@
 // src/services/api/ProductService.ts
-import type { Product, ShippingOption, FreightQuote } from "./types";
+import type {
+  ProductType,
+  ShippingOptionType,
+  FreightQuoteType,
+} from "./types";
 import { products } from "@common/mocks";
-import { toProduct, toFreightQuote } from "../func/adapters";
 
-export async function getProductById(id: string | number): Promise<Product> {
+export async function getProductById(
+  id: string | number
+): Promise<ProductType> {
   const p = products.find((pp) => String(pp.id) === String(id));
   if (!p) throw new Error("Produto não encontrado");
   return p;
@@ -12,7 +17,7 @@ export async function getProductById(id: string | number): Promise<Product> {
 export async function getRelatedProducts(
   category?: string,
   currentId?: string | number
-): Promise<Product[]> {
+): Promise<ProductType[]> {
   const list = products.filter((p) =>
     !!category ? p.category === category : true
   );
@@ -20,11 +25,10 @@ export async function getRelatedProducts(
 }
 
 export async function calcFreightForOptions(
-  options: ShippingOption[],
+  options: ShippingOptionType[],
   cep: string
-): Promise<Partial<Record<ShippingOption["id"], FreightQuote>>> {
-  // mock de cotação
-  const map: Partial<Record<ShippingOption["id"], FreightQuote>> = {};
+): Promise<Partial<Record<ShippingOptionType["id"], FreightQuoteType>>> {
+  const map: Partial<Record<ShippingOptionType["id"], FreightQuoteType>> = {};
   for (const o of options) {
     if (o.id === "pickup")
       map[o.id] = { id: o.id, label: o.label, price: 0, etaDays: 0 };

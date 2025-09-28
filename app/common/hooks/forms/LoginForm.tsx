@@ -22,7 +22,6 @@ export const useLoginForm = (): FormHookType => {
     password: "",
   });
 
-  // Handle input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
@@ -31,34 +30,30 @@ export const useLoginForm = (): FormHookType => {
       [name]: value,
     });
 
-    // Clear the error for the field being updated
     setErrors({
       ...errors,
       [name]: "",
     });
   };
 
-  // Validate form data and set errors if any
   const verifyErrors = () => {
     const { error } = Validators["LoginSchema"].validate(formData, {
-      abortEarly: false, // Collect all errors
+      abortEarly: false, 
     });
 
     if (error) {
       setValid(false);
       const newErrors: Partial<Record<keyof ILoginHookJson, string>> = {};
       error.details.forEach((detail: any) => {
-        const field = detail.path[0] as keyof ILoginHookJson; // Explicitly type the field as keyof ILoginJson
-        newErrors[field] = detail.message; // Assign error message to corresponding field
+        const field = detail.path[0] as keyof ILoginHookJson;
+        newErrors[field] = detail.message; 
       });
-      setErrors(newErrors); // Set all form errors
+      setErrors(newErrors); 
       return false;
     } else {
       setValid(true);
-      // If no errors, clear errors and handle form submission
       setErrors({});
       console.log("Form data is valid. Ready for submission:", formData);
-      // Proceed with form submission logic, e.g., API call
       return true;
     }
   };

@@ -31,7 +31,6 @@ export const useRegisterForm = (): FormHookType => {
     acceptUpdates: "",
   });
 
-  // Handle input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
@@ -40,7 +39,6 @@ export const useRegisterForm = (): FormHookType => {
       [name]: value,
     });
 
-    // Clear the error for the field being updated
     setErrors({
       ...errors,
       [name]: "",
@@ -56,34 +54,30 @@ export const useRegisterForm = (): FormHookType => {
       [name]: event.target.checked,
     });
 
-    // Clear the error for the field being updated
     setErrors({
       ...errors,
       [name]: "",
     });
   };
 
-  // Validate form data and set errors if any
-  // Validate form data and set errors if any
   const verifyErrors = () => {
     const { error } = Validators["RegisterSchema"].validate(formData, {
-      abortEarly: false, // Collect all errors
+      abortEarly: false,
     });
 
     if (error) {
       console.log(error);
       const newErrors: Partial<Record<keyof IRegisterHookJson, string>> = {};
       error.details.forEach((detail: any) => {
-        const field = detail.path[0] as keyof IRegisterHookJson; // Explicitly type the field as keyof IAppointmentJson
-        newErrors[field] = detail.message; // Assign error message to corresponding field
+        const field = detail.path[0] as keyof IRegisterHookJson; 
+        newErrors[field] = detail.message;
       });
-      setErrors(newErrors); // Set all form errors
-      return false; // Return false if there are validation errors
+      setErrors(newErrors); 
+      return false;
     } else {
-      // No errors, clear the errors
       setErrors({});
       console.log("Form data is valid. Ready for submission:", formData);
-      return true; // Return true if there are no validation errors
+      return true;
     }
   };
 
