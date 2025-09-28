@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type {
   ProductType,
   OrderType,
@@ -34,14 +35,27 @@ export const badges: BadgeType[] = [
 ];
 
 export const products: ProductType[] = [
+=======
+// src/common/mocks.ts
+
+import type { Product, Order, User, Card, Address } from "@common/types";
+
+// ---------- Produtos e categorias ----------
+export const products: Product[] = [
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
   {
     id: 101,
     name: "Fone Bluetooth XY-300",
     image: "https://m.media-amazon.com/images/I/61g+jV15o8L.jpg",
     price: 149.9,
     rating: 4.5,
+<<<<<<< HEAD
     badgeIds: ["badge-promo"],
     categoryId: "cat-audio",
+=======
+    badge: "Promo",
+    category: "Acessórios",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     stock: 30,
     tags: ["bluetooth", "fone", "audio"],
     paymentMethods: ["PIX", "Cartão"],
@@ -58,8 +72,13 @@ export const products: ProductType[] = [
       "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1400&auto=format&fit=crop",
     price: 299.0,
     rating: 4.8,
+<<<<<<< HEAD
     badgeIds: ["badge-bestseller"],
     categoryId: "cat-peripherals",
+=======
+    badge: "Mais vendido",
+    category: "Teclados",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     stock: 15,
     tags: ["teclado", "mecânico", "aurora"],
     paymentMethods: ["PIX", "Cartão"],
@@ -76,8 +95,13 @@ export const products: ProductType[] = [
       "https://images.unsplash.com/photo-1593305841991-05c297ba4575?q=80&w=1400&auto=format&fit=crop",
     price: 189.5,
     rating: 4.2,
+<<<<<<< HEAD
     badgeIds: ["badge-new"],
     categoryId: "cat-mouses",
+=======
+    badge: "Novo",
+    category: "Mouses",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     stock: 20,
     tags: ["mouse", "gamer"],
     paymentMethods: ["PIX", "Cartão"],
@@ -94,7 +118,11 @@ export const products: ProductType[] = [
       "https://www.kawaiies.com/cdn/shop/products/kawaiies-plushies-plush-softtoy-large-pastel-waterproof-backpack-handbag-bag-pink-784000.jpg?v=1678836044",
     price: 219.9,
     rating: 4.6,
+<<<<<<< HEAD
     categoryId: "cat-misc",
+=======
+    category: "Mochilas",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     stock: 12,
     tags: ["mochila", "urbana"],
     paymentMethods: ["PIX", "Cartão"],
@@ -104,6 +132,7 @@ export const products: ProductType[] = [
       { id: "carrier", label: "Transportadora", icon: "truck" },
     ],
   },
+<<<<<<< HEAD
   {
     id: 105,
     name: "JavaScript: O Guia Definitivo",
@@ -175,18 +204,42 @@ export const products: ProductType[] = [
 export const ordersMock: OrderType[] = [
   {
     id: "fe3898cc-1814-417e-abbd-4324b9f8cbf5",
+=======
+];
+
+export const categories: string[] = [
+  "Acessórios",
+  "Teclados",
+  "Mouses",
+  "Mochilas",
+  "Escritório",
+];
+
+// ---------- Pedidos (ids dos itens == ids dos produtos acima) ----------
+export const ordersMock: Order[] = [
+  {
+    id: "#2025-0001",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     createdAt: new Date().toISOString(),
     status: "PAID",
     items: [
       {
+<<<<<<< HEAD
         id: 102,
+=======
+        id: 102, // Teclado Mecânico Aurora
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
         name: "Teclado Mecânico Aurora",
         image: products.find((p) => p.id === 102)!.image,
         price: 299.0,
         qty: 1,
       },
       {
+<<<<<<< HEAD
         id: 103,
+=======
+        id: 103, // Mouse Gamer Helios
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
         name: "Mouse Gamer Helios",
         image: products.find((p) => p.id === 103)!.image,
         price: 189.5,
@@ -195,12 +248,19 @@ export const ordersMock: OrderType[] = [
     ],
     address: {
       name: "Letícia Andrade",
+<<<<<<< HEAD
       rua: "Rua das Flores",
       numero: "123",
       bairro: "Centro",
       cidade: "Campina Grande",
       estado: "PB",
       cep: "58400-000",
+=======
+      line1: "Rua das Flores, 123",
+      city: "Campina Grande",
+      state: "PB",
+      zip: "58400-000",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     },
     payment: { method: "PIX" },
     shipment: { method: "Correios", tracking: "BR1234567890", etaDays: 5 },
@@ -209,6 +269,7 @@ export const ordersMock: OrderType[] = [
     discount: 0,
     total: 488.5,
   },
+<<<<<<< HEAD
   {
     id: "ebook-001",
     createdAt: new Date(Date.now() - 86400000).toISOString(),
@@ -245,6 +306,12 @@ export const ordersMock: OrderType[] = [
 
 // ---------- Perfil ----------
 export const mockUser: UserType = {
+=======
+];
+
+// ---------- Perfil ----------
+export const mockUser: User = {
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
   name: "Letícia Andrade",
   email: "leticia@example.com",
   phone: "(83) 99999-9999",
@@ -259,6 +326,7 @@ export const mockUser: UserType = {
   marketingSMS: false,
 };
 
+<<<<<<< HEAD
 export const mockAddresses: AddressType[] = [
   {
     id: "addr-1",
@@ -270,11 +338,22 @@ export const mockAddresses: AddressType[] = [
     cidade: "Campina Grande",
     estado: "PB",
     cep: "58400-000",
+=======
+export const mockAddresses: Address[] = [
+  {
+    id: "addr-1",
+    label: "Casa",
+    line1: "Rua das Flores, 123",
+    city: "Campina Grande",
+    state: "PB",
+    zip: "58400-000",
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
     isDefault: true,
   },
   {
     id: "addr-2",
     label: "Trabalho",
+<<<<<<< HEAD
     rua: "Av. Principal",
     numero: "456",
     complemento: "Sala 201",
@@ -286,6 +365,16 @@ export const mockAddresses: AddressType[] = [
 ];
 
 export const mockCards: CardType[] = [
+=======
+    line1: "Av. Principal, 456 - Sala 201",
+    city: "João Pessoa",
+    state: "PB",
+    zip: "58000-000",
+  },
+];
+
+export const mockCards: Card[] = [
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
   {
     id: "card-1",
     brand: "Visa",

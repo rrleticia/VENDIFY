@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+// ProductCard.tsx
+
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
 import type { ProductType } from "@common/types";
 import {
   Card,
@@ -13,12 +18,24 @@ import { Link } from "react-router";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 
+<<<<<<< HEAD
 type Props = {
   product: ProductType;
   onAddToCart?: (product: ProductType) => void;
 };
 
 export default function CartalogProductCard({ product, onAddToCart }: Props) {
+=======
+interface ICatalogProductCardProps {
+  product: ProductType;
+  onAddToCart?: (product: ProductType) => void;
+}
+
+export default function CatalogProductCard({
+  product,
+  onAddToCart,
+}: ICatalogProductCardProps) {
+>>>>>>> 82c00265b44286a4cf7bd413917921aa91196f00
   return (
     <Card
       sx={{

@@ -1,14 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useUserContext } from "./UserContext";
 import { useNavigate } from "react-router";
 import { validateExpireStoredStringDate } from "@common/util";
+import { useUserContext } from "@common/index";
 import { AuthService } from "@app/services";
-import type { IRegisterInterface } from "@app/services/api/AuthService";
 
 interface IAuthContextData {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (payload: IRegisterInterface) => Promise<void>;
+  register: (payload: any) => Promise<void>;
   access_token: string | undefined;
   set_access_token: (value: string | undefined) => void;
   isAuthenticated: boolean;
@@ -89,7 +88,7 @@ export function AuthProvider({ children }: IAuthProviderProps) {
     navigate("/login", { replace: true });
   }
 
-  async function handleRegister(payload: IRegisterInterface) {
+  async function handleRegister(payload: any) {
     const { email, password, name, phone, acceptUpdates } = payload;
     const result = await AuthService.register(
       email,

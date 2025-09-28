@@ -1,14 +1,15 @@
 import {
-  type ShippingMethodId,
-  type FreightQuote,
-  type Product,
-  type ShippingOption,
-} from "@common/types";
-import {
   getProductById,
   getRelatedProducts,
   calcFreightForOptions,
 } from "@app/services/api/ProductService";
+import {
+  type ShippingMethodId,
+  type FreightQuote,
+  type ShippingOption,
+  type ProductType,
+} from "@common/types";
+
 import {
   createContext,
   useCallback,
@@ -22,8 +23,8 @@ type FreightMap = Record<ShippingMethodId, FreightQuote>;
 
 interface State {
   loading: boolean;
-  product: Product | null;
-  related: Product[];
+  product: ProductType | null;
+  related: ProductType[];
   shipping: ShippingMethodId;
   cep: string;
   freteLoading: boolean;
@@ -33,8 +34,8 @@ interface State {
 
 type Action =
   | { type: "SET_LOADING"; payload: boolean }
-  | { type: "SET_PRODUCT"; payload: Product | null }
-  | { type: "SET_RELATED"; payload: Product[] }
+  | { type: "SET_PRODUCT"; payload: ProductType | null }
+  | { type: "SET_RELATED"; payload: ProductType[] }
   | { type: "SET_CEP"; payload: string }
   | { type: "SET_SHIPPING"; payload: ShippingMethodId }
   | { type: "SET_FRETE_LOADING"; payload: boolean }
@@ -99,7 +100,10 @@ export function ProductDetailsProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_ERROR", payload: undefined });
     try {
       const product = await getProductById(id);
-      dispatch({ type: "SET_PRODUCT", payload: product as unknown as Product });
+      dispatch({
+        type: "SET_PRODUCT",
+        payload: product as unknown as ProductType,
+      });
 
       const initialShipping =
         (product as any)?.shippingOptions?.[0]?.id ??
@@ -112,7 +116,7 @@ export function ProductDetailsProvider({ children }: { children: ReactNode }) {
       );
       dispatch({
         type: "SET_RELATED",
-        payload: related as unknown as Product[],
+        payload: related as unknown as ProductType[],
       });
     } catch (e: any) {
       dispatch({

@@ -44,3 +44,4 @@ export async function getHomeCollections(): Promise<HomeCollections> {
 
   return { banners, featured, deals, bestRated, categories };
 }
+ 
