@@ -18,6 +18,7 @@ export default [
     route("checkout", "./pages/client/CheckoutPage.tsx"),
     route("checkout/success", "./pages/client/CheckoutSuccessPage.tsx"),
     route("pix/qr", "./pages/client/PixQRCodePage.tsx"),
+    route("tracking/:trackingCode", "./pages/client/TrackingPage.tsx"),
   ]),
 
   layout("./pages/client/AuthLayout.tsx", [
